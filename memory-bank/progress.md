@@ -12,14 +12,14 @@
 - [x] Document key decisions
 - [x] Update memory bank
 
-### Phase M1: Camera and Controls - ⏳ NOT STARTED
-- [ ] M1.1: Enable Flying Mode as Default
-- [ ] M1.2: Remove Physics and Collisions
-- [ ] M1.3: Remap Altitude Controls (Q/E)
-- [ ] M1.4: Update Forward/Backward Movement (include vertical component)
-- [ ] M1.5: Implement Speed Toggle
-- [ ] M1.6: Swap Click Controls (left=place, right=remove)
-- [ ] M1.7: Set Initial Camera Position (40, 10, 40) looking at (50, 0, 50)
+### Phase M1: Camera and Controls - ✅ COMPLETE
+- [x] M1.1: Enable Flying Mode as Default
+- [x] M1.2: Remove Physics and Collisions
+- [x] M1.3: Remap Altitude Controls (Q/E)
+- [x] M1.4: Update Forward/Backward Movement (include vertical component)
+- [x] M1.5: Implement Speed Toggle
+- [x] M1.6: Swap Click Controls (left=place, right=remove)
+- [x] M1.7: Set Initial Camera Position (40, 10, 40) looking at (50, 0, 50)
 
 ### Phase M2: World Initialization - ⏳ NOT STARTED
 - [ ] M2.1: Disable Procedural Terrain Generation
@@ -73,22 +73,31 @@
 - ✅ **Architecture Design**: System architecture documented
 - ✅ **Decision Documentation**: All implementation decisions resolved
 - ✅ **Memory Bank**: Comprehensive project context documented
+- ✅ **Phase M1: Camera and Controls**: All 7 tasks completed
+  - Flying mode enabled by default
+  - Physics and collisions removed
+  - Q/E altitude controls remapped
+  - Forward/backward movement includes vertical component
+  - Speed toggle implemented (Space key)
+  - Click controls swapped (left=place, right=remove)
+  - Initial camera position set
 
 ### In Progress
-- ⏳ **Frontend Migration**: Ready to begin Phase M1
+- ⏳ **Frontend Migration**: Phase M1 complete, ready for Phase M2
 
 ---
 
 ## What's Next
 
 ### Priority 1 (Immediate - Next Session)
-- [ ] Begin Phase M1: Camera and Controls
-  - Start with M1.1: Enable flying mode as default
-  - Then M1.2: Remove physics and collisions
-  - Continue through M1.7
+- [x] Complete Phase M1: Camera and Controls (all 7 tasks done)
+- [ ] Begin Phase M2: World Initialization
+  - Start with M2.1: Disable procedural terrain generation
+  - Then M2.2: Disable cloud generation
+  - Continue through M2.5
 
 ### Priority 2 (This Week)
-- [ ] Complete Phase M1: Camera and Controls (7 tasks)
+- [x] Complete Phase M1: Camera and Controls (7 tasks)
 - [ ] Complete Phase M2: World Initialization (5 tasks)
 - [ ] Begin Phase M3: Block System
 
@@ -146,4 +155,4 @@ None currently - all blockers resolved during planning phase.
 - ✅ Ready to begin coding
 
 ### Next Session Focus
-Start with Phase M1, Task M1.1: Enable flying mode as default in `frontend/src/player/index.ts`.
+Start with Phase M2, Task M2.1: Disable procedural terrain generation in `frontend/src/terrain/index.ts`.
