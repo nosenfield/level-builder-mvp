@@ -114,6 +114,44 @@ function getBlockTypeForColor(color: string): BlockType {
 
 **Why**: Decouples color selection from rendering system, allows flexible color assignment.
 
+### Pattern 4: Map-Based Block Lookups (Performance)
+**When to use**: Fast O(1) block lookups by position instead of O(n) array searches
+**Example**:
+```typescript
+// In Terrain class
+blocksMap = new Map<string, Block>()  // Key: `${x}_${y}_${z}`
+
+// When adding block
+const blockKey = `${x}_${y}_${z}`
+this.blocksMap.set(blockKey, block)
+
+// When looking up block
+const block = this.blocksMap.get(`${x}_${y}_${z}`)
+```
+
+**Why**: With 10,000+ blocks, linear search becomes slow. Map provides O(1) lookups.
+
+### Pattern 5: Spatial Partitioning for Highlight System
+**When to use**: Optimizing highlight/raycast systems that check many blocks
+**Example**:
+```typescript
+// Only check blocks within raycaster range
+const raycasterRange = 8
+const minX = Math.floor(camera.x - raycasterRange)
+const maxX = Math.ceil(camera.x + raycasterRange)
+// ... similar for Y and Z
+
+for (const block of customBlocks) {
+  if (block.x >= minX && block.x <= maxX && 
+      block.y >= minY && block.y <= maxY &&
+      block.z >= minZ && block.z <= maxZ) {
+    // Process block
+  }
+}
+```
+
+**Why**: Reduces iterations from 10,000+ to ~100-200 per frame, maintains ≥30 FPS.
+
 ---
 
 ## Key Invariants
@@ -190,7 +228,9 @@ function getBlockTypeForColor(color: string): BlockType {
 ## Performance Considerations
 
 ### Optimization Strategy
-- **InstancedMesh**: Batch rendering of same-color blocks
+- **InstancedMesh**: Batch rendering of same-color blocks (reduces draw calls)
+- **Map-based lookups**: O(1) block position lookups instead of O(n) array searches
+- **Spatial partitioning**: Only check nearby blocks in highlight/raycast systems
 - **Chunk-based generation**: (Currently disabled for MVP, but structure exists)
 - **Worker threads**: Terrain generation in background (disabled for MVP)
 - **Lazy loading**: Only render visible blocks (future optimization)
