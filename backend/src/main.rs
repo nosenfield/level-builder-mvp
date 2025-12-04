@@ -1,8 +1,8 @@
 /**
- * Phase 5: Backend API Setup
+ * Phase 5-6: Backend API Setup with Validation
  * 
  * Axum HTTP server with CORS and /api/export endpoint.
- * Accepts Space JSON from frontend and returns .rbxlx file.
+ * Accepts Space JSON from frontend, validates it, and returns .rbxlx file.
  */
 
 use axum::{
@@ -16,8 +16,10 @@ use std::env;
 use tower_http::cors::{Any, CorsLayer};
 
 mod models;
+mod validation;
 
 use models::SpaceJSON;
+use validation::validate_space_json;
 
 /// Error response structure
 #[derive(Debug)]
@@ -38,16 +40,16 @@ impl IntoResponse for ApiError {
 
 /// Export endpoint handler
 async fn export_handler(Json(payload): Json<SpaceJSON>) -> Result<Response, ApiError> {
-    // For Phase 5, we return a placeholder .rbxlx file
-    // Actual RBXLX generation will be implemented in Phase 7
-    
-    // Validate schema version (must be 1 for MVP)
-    if payload.schema_version != 1 {
+    // Phase 6: Validate Space JSON before processing
+    if let Err(validation_error) = validate_space_json(&payload) {
         return Err(ApiError {
-            error: "INVALID_SCHEMA_VERSION".to_string(),
-            message: format!("Unsupported schema version: {}. Only version 1 is supported.", payload.schema_version),
+            error: validation_error.error_code().to_string(),
+            message: validation_error.message(),
         });
     }
+
+    // For Phase 5, we return a placeholder .rbxlx file
+    // Actual RBXLX generation will be implemented in Phase 7
 
     // Create placeholder .rbxlx content
     // This is a minimal valid XML structure that Roblox Studio can recognize
