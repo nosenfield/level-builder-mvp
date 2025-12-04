@@ -98,7 +98,20 @@ class Block {
 
 **Why**: Single source of truth, extensible for future features, easy to serialize.
 
-### Pattern 3: Color-to-BlockType Mapping
+### Pattern 3: Reduced Memory Allocation for Unused Types
+**When to use**: Block types that exist in enum but aren't actively used
+**Example**:
+```typescript
+// Set allocation factor to 0 for unused texture blocks
+blocksFactor = [
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // 12 texture blocks (unused)
+  0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5  // 10 color blocks (used)
+]
+```
+
+**Why**: Prevents unnecessary memory allocation for InstancedMesh instances that will never be used.
+
+### Pattern 4: Color-to-BlockType Mapping
 **When to use**: Converting color selection to BlockType enum for rendering
 **Example**:
 ```typescript
@@ -115,7 +128,21 @@ function getBlockTypeForColor(color: string): BlockType {
 
 **Why**: Decouples color selection from rendering system, allows flexible color assignment.
 
-### Pattern 4: Map-Based Block Lookups (Performance)
+### Pattern 5: CSS Class-Based Styling (UI)
+**When to use**: Styling UI elements instead of inline styles
+**Example**:
+```typescript
+// Create element with CSS classes
+let colorSquare = document.createElement('div')
+colorSquare.className = 'color-square'
+if (isWhite) {
+  colorSquare.classList.add('color-white')
+}
+```
+
+**Why**: Better separation of concerns, easier maintenance, consistent styling approach.
+
+### Pattern 6: Map-Based Block Lookups (Performance)
 **When to use**: Fast O(1) block lookups by position instead of O(n) array searches
 **Example**:
 ```typescript
@@ -132,7 +159,34 @@ const block = this.blocksMap.get(`${x}_${y}_${z}`)
 
 **Why**: With 10,000+ blocks, linear search becomes slow. Map provides O(1) lookups.
 
-### Pattern 5: Direct Raycasting Against Rendered Blocks
+### Pattern 7: Cached Performance Counters
+**When to use**: Tracking counts that are checked frequently (e.g., block limits)
+**Example**:
+```typescript
+// In Terrain class
+userPlacedBlockCount = 0
+
+// On block placement (non-ground blocks)
+incrementUserPlacedCount() {
+  this.userPlacedBlockCount++
+}
+
+// On block removal (non-ground blocks)
+decrementUserPlacedCount() {
+  if (this.userPlacedBlockCount > 0) {
+    this.userPlacedBlockCount--
+  }
+}
+
+// Get count (O(1) instead of O(n) filter)
+getUserPlacedBlockCount(): number {
+  return this.userPlacedBlockCount
+}
+```
+
+**Why**: With 10,000+ blocks, filtering array on every placement check is O(n). Cached counter is O(1).
+
+### Pattern 8: Direct Raycasting Against Rendered Blocks
 **When to use**: Highlight/raycast systems that need to detect blocks under crosshair
 **Example**:
 ```typescript
@@ -236,6 +290,8 @@ if (intersects.length > 0) {
 - **Map-based lookups**: O(1) block position lookups instead of O(n) array searches
 - **Direct raycasting**: Raycast against rendered blocks (terrain.blocks[]) - Three.js handles culling automatically
 - **Shared constants**: Extract magic numbers to shared constants.ts for consistency
+- **Reduced allocations**: Set unused block type factors to 0, reduce maxCount for manual placement
+- **Cached counters**: O(1) user-placed block count instead of O(n) array filtering
 - **Chunk-based generation**: (Currently disabled for MVP, but structure exists)
 - **Worker threads**: Terrain generation in background (disabled for MVP)
 - **Lazy loading**: Only render visible blocks (future optimization)
@@ -243,6 +299,7 @@ if (intersects.length > 0) {
 ### Caching Strategy
 - **Materials**: Created once, reused for all blocks of same color
 - **Geometry**: Single BoxGeometry shared across all InstancedMeshes
+- **Block counters**: Cached user-placed block count (incremented/decremented on place/remove)
 - **No network caching**: Stateless backend, no caching needed
 
 ### Scaling Approach
