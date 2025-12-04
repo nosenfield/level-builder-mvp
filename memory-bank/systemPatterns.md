@@ -32,12 +32,13 @@ Three-tier architecture: Browser Frontend → Rust Backend → Roblox Studio
 **Frontend** (TypeScript + three.js):
 ```
 frontend/src/
+├── constants.ts    # Shared constants (BLOCK_INTERACTION_RANGE, etc.)
 ├── core/           # Scene, camera, renderer setup
 ├── control/        # Camera controls, block placement/removal
 ├── player/         # Player state (mode, speed)
 ├── terrain/        # Block rendering, terrain generation
 │   ├── mesh/       # Block geometry, materials
-│   ├── highlight/  # Block preview/highlight
+│   ├── highlight/  # Block preview/highlight (raycasts against terrain.blocks[])
 │   └── worker/     # Terrain generation workers
 ├── ui/             # UI components (hotbar, FPS, joystick)
 ├── audio/          # Sound effects and music
@@ -131,26 +132,29 @@ const block = this.blocksMap.get(`${x}_${y}_${z}`)
 
 **Why**: With 10,000+ blocks, linear search becomes slow. Map provides O(1) lookups.
 
-### Pattern 5: Spatial Partitioning for Highlight System
-**When to use**: Optimizing highlight/raycast systems that check many blocks
+### Pattern 5: Direct Raycasting Against Rendered Blocks
+**When to use**: Highlight/raycast systems that need to detect blocks under crosshair
 **Example**:
 ```typescript
-// Only check blocks within raycaster range
-const raycasterRange = 8
-const minX = Math.floor(camera.x - raycasterRange)
-const maxX = Math.ceil(camera.x + raycasterRange)
-// ... similar for Y and Z
+// Raycast directly against rendered InstancedMesh array
+this.raycaster.setFromCamera({ x: 0, y: 0 }, this.camera)
+this.raycaster.far = BLOCK_INTERACTION_RANGE // 50 units
 
-for (const block of customBlocks) {
-  if (block.x >= minX && block.x <= maxX && 
-      block.y >= minY && block.y <= maxY &&
-      block.z >= minZ && block.z <= maxZ) {
-    // Process block
-  }
+const intersects = this.raycaster.intersectObjects(this.terrain.blocks)
+if (intersects.length > 0) {
+  const hit = intersects[0]
+  // Extract position from InstancedMesh instance
+  const matrix = new THREE.Matrix4()
+  hit.object.getMatrixAt(hit.instanceId, matrix)
+  const position = new THREE.Vector3().setFromMatrixPosition(matrix)
 }
 ```
 
-**Why**: Reduces iterations from 10,000+ to ~100-200 per frame, maintains ≥30 FPS.
+**Why**: 
+- Ensures consistency with block placement/removal (uses same meshes)
+- Eliminates range mismatches (no separate instanceMesh to maintain)
+- Three.js handles bounding box culling automatically
+- Simpler code, fewer edge cases
 
 ---
 
@@ -230,7 +234,8 @@ for (const block of customBlocks) {
 ### Optimization Strategy
 - **InstancedMesh**: Batch rendering of same-color blocks (reduces draw calls)
 - **Map-based lookups**: O(1) block position lookups instead of O(n) array searches
-- **Spatial partitioning**: Only check nearby blocks in highlight/raycast systems
+- **Direct raycasting**: Raycast against rendered blocks (terrain.blocks[]) - Three.js handles culling automatically
+- **Shared constants**: Extract magic numbers to shared constants.ts for consistency
 - **Chunk-based generation**: (Currently disabled for MVP, but structure exists)
 - **Worker threads**: Terrain generation in background (disabled for MVP)
 - **Lazy loading**: Only render visible blocks (future optimization)

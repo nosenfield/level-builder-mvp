@@ -87,7 +87,14 @@
   - Audio disabled (silent operation)
   - 100x100 grey ground plane created at Y=0 with yellow marker grid (11x11 intersections)
   - Ground block protection implemented (isGround flag)
-  - Performance optimizations: blocksMap (O(1) lookups), spatial partitioning, InstancedMesh for markers
+  - Performance optimizations: blocksMap (O(1) lookups), InstancedMesh for markers
+- ✅ **Highlight System Refactoring**: Completed improvements
+  - Simplified to raycast directly against rendered blocks (terrain.blocks[])
+  - Created shared constants.ts for BLOCK_INTERACTION_RANGE
+  - Removed dead code and redundant assignments
+  - Fixed inconsistent highlighting issues
+  - Increased block placement distance to 50 units
+  - Decreased hold-to-place interval to 0.25s
 
 ### In Progress
 - ⏳ **Frontend Migration**: Phase M2 complete, ready for Phase M3

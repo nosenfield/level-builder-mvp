@@ -46,27 +46,31 @@ Successfully implemented all 5 tasks in Phase M2:
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. **Completed Phase M2: World Initialization** (December 2024)
+1. **Refactored Highlight System** (December 2024)
+   - Simplified block highlight by raycasting directly against rendered blocks (terrain.blocks[])
+   - Removed separate instanceMesh for raycasting (eliminated range mismatch issues)
+   - Created shared constants.ts with BLOCK_INTERACTION_RANGE (50 units)
+   - Removed dead code (BLOCK_HIGHLIGHT_RANGE)
+   - Fixed inconsistent highlighting - now consistent with block placement/removal range
+   - Increased block placement distance to 50 units
+   - Decreased hold-to-place interval to 0.25s (250ms)
+
+2. **Completed Phase M2: World Initialization** (December 2024)
    - Disabled procedural terrain and cloud generation
    - Disabled audio system (silent operation)
    - Created 100x100 grey ground plane at Y=0 with yellow marker grid (11x11 intersections)
    - Added isGround property to Block class
    - Implemented ground block protection (non-removable)
    - Removed generateAdjacentBlocks calls
-   - Performance optimizations: blocksMap for O(1) lookups, spatial partitioning in highlight system, InstancedMesh for yellow markers
+   - Performance optimizations: blocksMap for O(1) lookups, InstancedMesh for yellow markers
 
-2. **Completed Phase M1: Camera and Controls** (December 2024)
+3. **Completed Phase M1: Camera and Controls** (December 2024)
    - Implemented all 7 camera/control tasks
    - Removed collision detection and physics
    - Enhanced forward/backward movement with vertical component
    - Swapped click controls (left=place, right=remove)
    - Added speed toggle functionality
    - Set initial camera position
-
-3. **Created comprehensive migration task list** (December 2024)
-   - Documented 23 tasks across 5 phases (M1-M5)
-   - Resolved all outstanding implementation questions
-   - Added LLM tag system design for future game mechanics
 
 ---
 
@@ -80,6 +84,7 @@ Successfully implemented all 5 tasks in Phase M2:
 - [x] Update memory bank
 - [x] Complete Phase M1 implementation (Camera and Controls)
 - [x] Complete Phase M2 implementation (World Initialization)
+- [x] Refactor highlight system for consistency and performance
 - [ ] Begin Phase M3 implementation (Block System)
 
 ### Near-Term (This Week)
