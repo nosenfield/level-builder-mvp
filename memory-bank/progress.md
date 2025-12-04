@@ -69,9 +69,38 @@
 - [x] 5.5: Implement JSON deserialization
 - [x] 5.6: Return `.rbxlx` as `application/octet-stream` with `Content-Disposition`
 
-### Phase 6-10: Backend & Deployment - ⏳ NOT STARTED
-- Validation
-- RBXLX generation
+### Phase 6: Backend Validation - ✅ COMPLETE
+- [x] 6.1: Validate schema version equals 1
+- [x] 6.2: Validate block count <= 10,000
+- [x] 6.3: Validate coordinate bounds for all blocks
+- [x] 6.4: Validate color format (hex pattern)
+- [x] 6.5: Validate no duplicate positions
+- [x] 6.6: Return structured error JSON for validation failures
+
+### Phase 7: Backend RBXLX Generation - ✅ COMPLETE
+- [x] 7.1: Create WeakDom with DataModel root
+- [x] 7.2: Add Workspace service
+- [x] 7.3: Add Terrain instance to Workspace
+- [x] 7.4: Add Camera instance to Workspace
+- [x] 7.5: Add Players service
+- [x] 7.6: Add Lighting service
+- [x] 7.7: Add ReplicatedStorage service
+- [x] 7.8: Add StarterGui service
+- [x] 7.9: Add StarterPack service
+- [x] 7.10: Add StarterPlayer service with child containers
+- [x] 7.11: Implement hex-to-Color3 conversion
+- [x] 7.12: Implement block-to-Part generation
+- [x] 7.13: Set Part properties (Name, Anchored, CanCollide, Size, CFrame, Color, Material)
+- [x] 7.14: Generate unique referents for each Part
+- [x] 7.15: Add all Parts as children of Workspace
+- [x] 7.16: Calculate spawn position (center of level, above highest block)
+- [x] 7.17: Create SpawnLocation instance
+- [x] 7.18: Set SpawnLocation properties (Anchored, Neutral, Duration, Size, CFrame)
+- [x] 7.19: Add SpawnLocation as child of Workspace
+- [x] 7.20: Serialize WeakDom to XML using rbx_xml::to_writer_default
+- [x] 7.21: Return XML bytes as response body
+
+### Phase 8-10: Integration Testing & Deployment - ⏳ NOT STARTED
 - Integration testing
 - Deployment
 
@@ -158,13 +187,33 @@
   - `/api/export` POST endpoint implemented
   - Space JSON structs defined with serde (matches frontend schema)
   - JSON deserialization with automatic error handling
-  - Schema version validation (only version 1 supported)
   - Returns placeholder `.rbxlx` file with correct headers
   - Structured error responses (error/message format)
   - Server configurable via PORT environment variable
+- ✅ **Phase 6: Backend Validation**: All tasks completed
+  - Created validation module (backend/src/validation.rs) with comprehensive validation
+  - Schema version validation (must be 1)
+  - Block count validation (<= 10,000 blocks)
+  - Coordinate bounds validation (X/Z: -500 to 500, Y: 0 to 500)
+  - Color format validation (hex pattern: #RRGGBB or #RGB)
+  - Duplicate position detection using HashSet (O(n) performance)
+  - Fail-fast validation (returns first error found)
+  - User-friendly error messages with specific details (block index, coordinates)
+  - 26 unit tests covering all validation scenarios (all passing)
+- ✅ **Phase 7: Backend RBXLX Generation**: All tasks completed
+  - Created RBXLX generation module (backend/src/rbxlx.rs) with complete DataModel generation
+  - Added rbx_dom_weak v4.0, rbx_xml v2.0, and rbx_types v3.0 dependencies
+  - Implemented hex-to-Color3 conversion (supports #RRGGBB and #RGB formats)
+  - Implemented block-to-Part generation with all required properties
+  - Implemented spawn location calculation (center X/Z, above highest block)
+  - Created complete DataModel structure with all required services
+  - Workspace contains Terrain, Camera, SpawnLocation, and all level Parts
+  - Updated export_handler to use generate_rbxlx() instead of placeholder
+  - 9 unit tests covering RBXLX generation (all passing)
+  - Total: 36 tests passing (26 validation + 9 RBXLX + 1 integration)
 
 ### In Progress
-- None - Phase 5 complete, ready for Phase 6 (Backend Validation)
+- None - Phase 7 complete, ready for Phase 8 (Integration Testing)
 
 ---
 
@@ -174,7 +223,9 @@
 - [x] Complete Phase M5: Data Structure enhancements (all 3 tasks done)
 - [x] Complete Phase 4: Frontend Export Integration (all 6 tasks done)
 - [x] Complete Phase 5: Backend API Setup (all 6 tasks done)
-- [ ] Begin Phase 6: Backend Validation
+- [x] Complete Phase 6: Backend Validation (all 6 tasks done)
+- [x] Complete Phase 7: Backend RBXLX Generation (all 21 tasks done)
+- [ ] Begin Phase 8: Integration Testing
 
 ### Priority 2 (This Week)
 - [x] Complete Phase M1: Camera and Controls (7 tasks)
@@ -188,7 +239,9 @@
 - [x] Complete Phase M5: Data Structure (3 tasks)
 - [x] Complete Phase 4: Frontend Export Integration
 - [x] Complete Phase 5: Backend API Setup
-- [ ] Begin Phase 6: Backend Validation
+- [x] Complete Phase 6: Backend Validation
+- [x] Complete Phase 7: Backend RBXLX Generation
+- [ ] Begin Phase 8: Integration Testing
 
 ---
 
@@ -238,4 +291,4 @@ None currently - all blockers resolved during planning phase.
 - ✅ Ready to begin coding
 
 ### Next Session Focus
-Begin Phase 6: Backend Validation. Implement validation for schema version, block count, coordinate bounds, color format, and duplicate positions. Return structured error JSON for validation failures.
+Begin Phase 8: Integration Testing. Test empty level export, single block export, multi-block export, maximum block export, various colors, coordinate edge cases, and verify generated files open correctly in Roblox Studio.
