@@ -210,6 +210,100 @@ if (intersects.length > 0) {
 - Three.js handles bounding box culling automatically
 - Simpler code, fewer edge cases
 
+### Pattern 9: Interval-Based Auto-Save
+**When to use**: Saving game state periodically without blocking user interactions
+**Example**:
+```typescript
+// Start auto-save timer (10 second interval)
+startAutoSave() {
+  this.autoSaveTimer = setInterval(() => {
+    this.saveToLocalStorage()
+  }, 10000) // 10 seconds
+}
+
+// Save on exit and page unload
+onExit() {
+  this.stopAutoSave()
+  this.saveToLocalStorage() // Immediate save on exit
+}
+
+window.addEventListener('beforeunload', () => {
+  this.saveToLocalStorage() // Save before page closes
+})
+```
+
+**Why**: 
+- Better performance than per-block saves (batches operations)
+- Smooth user experience (no blocking during rapid placement)
+- Consistent performance regardless of block count
+- Industry standard approach (Minecraft, etc.)
+- Minimal data loss risk (10s window acceptable)
+
+### Pattern 10: Camera State Save/Restore with Quaternion
+**When to use**: Saving and restoring complete camera view (position + rotation)
+**Example**:
+```typescript
+// Save camera state
+const cameraData = {
+  position: {
+    x: camera.position.x,
+    y: camera.position.y,
+    z: camera.position.z
+  },
+  quaternion: {
+    x: camera.quaternion.x,
+    y: camera.quaternion.y,
+    z: camera.quaternion.z,
+    w: camera.quaternion.w
+  }
+}
+
+// Restore camera state
+camera.position.set(x, y, z)
+camera.quaternion.set(x, y, z, w)
+```
+
+**Why**: 
+- Preserves exact 3D orientation (not just position)
+- Native Three.js format (what camera uses internally)
+- Works perfectly with PointerLockControls
+- Handles all rotation scenarios (pitch, yaw, roll)
+- Small data size (4 numbers for quaternion)
+
+### Pattern 11: Block Rendering on Load
+**When to use**: Rendering saved blocks when loading a game
+**Example**:
+```typescript
+renderCustomBlocks() {
+  // Reset counters and maps
+  this.blocksMap.clear()
+  this.userPlacedBlockCount = 0
+  this.blocksCount = new Array(this.materialType.length).fill(0)
+  
+  // Render all placed blocks
+  for (const block of this.customBlocks) {
+    if (block.placed) {
+      const matrix = new THREE.Matrix4()
+      matrix.setPosition(block.x, block.y, block.z)
+      this.blocks[block.type].setMatrixAt(count, matrix)
+      this.blocksMap.set(`${x}_${y}_${z}`, block)
+      // Update counters...
+    }
+  }
+  
+  // Update all instance matrices
+  for (const blockMesh of this.blocks) {
+    blockMesh.instanceMatrix.needsUpdate = true
+  }
+}
+```
+
+**Why**: 
+- Rebuilds complete rendering state from saved data
+- Ensures blocksMap and counters are synchronized
+- Properly updates InstancedMesh instances
+- Required after loading customBlocks from storage
+
 ---
 
 ## Key Invariants
@@ -259,11 +353,12 @@ if (intersects.length > 0) {
 8. Browser triggers download
 
 ### State Management
-- **Frontend**: In-memory only (no persistence)
-- **Block state**: Stored in `terrain.customBlocks` array
+- **Frontend**: In-memory with localStorage auto-save (10s interval + on exit)
+- **Block state**: Stored in `terrain.customBlocks` array, saved to localStorage
 - **Selected color**: Stored in `control.holdingBlock` (BlockType)
-- **Camera state**: Managed by PointerLockControls
+- **Camera state**: Managed by PointerLockControls, saved as position + quaternion
 - **UI state**: Managed by UI class (menu visibility, etc.)
+- **Save format**: localStorage keys: 'block' (customBlocks), 'camera' (position + quaternion), 'seed' (noise seed)
 
 ---
 

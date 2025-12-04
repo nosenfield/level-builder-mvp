@@ -39,12 +39,12 @@
 - [x] Performance: Add cached counter for user-placed blocks (O(1) instead of O(n))
 - [x] Code cleanup: Remove dead code related to indigo block type
 
-### Phase M4: UI Adaptation - ⏳ IN PROGRESS
+### Phase M4: UI Adaptation - ✅ COMPLETE
 - [x] M4.1: Update Hotbar to Color Palette (color squares with number labels, buttons 1-0)
-- [ ] M4.2: Add Block Counter Display (N / 10,000 in footer)
-- [ ] M4.3: Update Controls Help Text
-- [ ] M4.4: Remove Unused UI Elements (save/load, mobile joystick)
-- [ ] M4.5: Add Export Button to Escape Menu
+- [x] M4.2: Add Block Counter Display (N / 10,000 positioned under FPS counter)
+- [x] M4.3: Update Controls Help Text (renamed Guide to Controls, updated all instructions)
+- [x] M4.4: Remove Unused UI Elements (footer, GitHub link; save/load code preserved hidden)
+- [x] M4.5: Add Export Button to Escape Menu (placeholder implementation)
 
 ### Phase M5: Data Structure - ⏳ NOT STARTED
 - [ ] M5.1: Enhance Block Class (add color, isGround, tags, tagConfig)
@@ -107,34 +107,56 @@
   - Block limit enforcement (10,000 max user-placed blocks)
   - Performance optimizations: Reduced maxCount, zero allocation for unused texture blocks
   - Performance: Cached counter for user-placed blocks (O(1) instead of O(n))
-  - UI: Hotbar updated with color squares and number labels (M4.1 partially done)
+  - UI: Hotbar updated with color squares and number labels
   - Code cleanup: Removed indigo block type dead code
+- ✅ **Phase M4: UI Adaptation**: All tasks completed
+  - Block counter display (N / 10,000) positioned under FPS counter with warning state
+  - Controls help text updated (renamed Guide to Controls, all instructions current)
+  - UI cleanup (removed footer, GitHub link; preserved save/load code hidden)
+  - Export button added to Escape menu (placeholder for Phase 4)
+  - Menu structure improved (Export/Settings only in escape menu)
+- ✅ **Auto-Save System**: Implemented and working
+  - 10-second interval auto-save during gameplay
+  - Auto-save on exit to main menu
+  - Auto-save on page unload (beforeunload event)
+  - Error handling for localStorage quota exceeded
+- ✅ **Camera View Restoration**: Complete save/restore functionality
+  - Save camera quaternion (x, y, z, w) for complete view restoration
+  - Restore both position and rotation when loading saved games
+  - Backward compatible with legacy position-only saves
+- ✅ **Load Game Functionality**: Fixed and working
+  - Properly renders all saved blocks using renderCustomBlocks method
+  - Rebuilds blocksMap for O(1) lookups
+  - Updates block counters correctly
+  - Load Game button with smart enable/disable based on saved data
 
 ### In Progress
-- ⏳ **Frontend Migration**: Phase M3 complete, Phase M4 in progress (M4.1 done)
+- ⏳ **Frontend Migration**: Phase M4 complete, Phase M5 next (Data Structure enhancements)
 
 ---
 
 ## What's Next
 
 ### Priority 1 (Immediate - Next Session)
-- [x] Complete Phase M3: Block System (all tasks + performance optimizations done)
-- [x] M4.1: Update hotbar to color palette (done)
-- [ ] Complete remaining Phase M4 tasks
-  - M4.2: Add block counter display (N / 10,000)
-  - M4.3: Update controls help text
-  - M4.4: Remove unused UI elements
-  - M4.5: Add export button to Escape menu
+- [x] Complete Phase M4: UI Adaptation (all 5 tasks done)
+- [x] Implement auto-save system (10s interval + on exit)
+- [x] Implement camera view restoration
+- [x] Fix load game functionality
+- [ ] Begin Phase M5: Data Structure enhancements
+  - M5.1: Enhance Block class (add color, isGround, tags, tagConfig)
+  - M5.2: Implement Space JSON serialization
+  - M5.3: Tag system design documentation
 
 ### Priority 2 (This Week)
 - [x] Complete Phase M1: Camera and Controls (7 tasks)
 - [x] Complete Phase M2: World Initialization (5 tasks)
 - [x] Complete Phase M3: Block System (5 tasks)
-- [ ] Begin Phase M4: UI Adaptation
+- [x] Complete Phase M4: UI Adaptation (5 tasks)
+- [ ] Begin Phase M5: Data Structure (3 tasks)
 
 ### Priority 3 (This Month)
 - [x] Complete Phase M3: Block System (5 tasks)
-- [ ] Complete Phase M4: UI Adaptation (5 tasks)
+- [x] Complete Phase M4: UI Adaptation (5 tasks)
 - [ ] Complete Phase M5: Data Structure (3 tasks)
 - [ ] Begin Phase 4: Frontend Export Integration
 

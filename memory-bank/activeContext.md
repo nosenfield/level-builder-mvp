@@ -5,22 +5,25 @@
 ## Current Focus
 
 ### What We're Working On Right Now
-**Phase M3: Block System Implementation** - ✅ COMPLETE
+**Phase M4: UI Adaptation** - ✅ COMPLETE
 
-Successfully implemented all tasks in Phase M3 with performance optimizations:
-- M3.1: Defined color-based BlockType enum (10 colors: red, orange, yellow, green, blue, violet, brown, white, gray, black)
-- M3.2: Created solid color materials (MeshStandardMaterial with hex colors, removed indigo)
-- M3.3: Updated block rendering system (InstancedMesh per color, updated ground plane to use gray/yellow)
-- M3.4: Implemented coordinate bounds enforcement (X/Z: -500 to 500, Y: 0 to 500)
-- M3.5: Implemented block limit enforcement (10,000 max user-placed blocks, ground excluded)
-- Performance: Reduced maxCount from ~28,724 to 20,000, set texture block factors to 0
-- Performance: Added cached counter for user-placed blocks (O(1) instead of O(n))
-- UI: Updated hotbar with color squares and number labels (buttons 1-0)
-- UI: Extracted inline styles to CSS classes for maintainability
-- Code cleanup: Removed dead code related to indigo block type
+Successfully completed all Phase M4 tasks:
+- M4.1: Updated hotbar to color palette (color squares with number labels)
+- M4.2: Added block counter display (N / 10,000) positioned under FPS counter
+- M4.3: Updated controls help text (renamed Guide to Controls, updated all control instructions)
+- M4.4: Removed unused UI elements (footer, GitHub link; preserved save/load code hidden for production)
+- M4.5: Added Export button to Escape menu (placeholder implementation ready for Phase 4)
+
+Additional improvements:
+- Implemented 10-second interval auto-save system
+- Auto-save on exit and page unload
+- Camera quaternion save/restore for complete view restoration
+- Fixed load game to properly render saved blocks (renderCustomBlocks method)
+- Restored Load Game button with enable/disable based on saved data
+- UI cleanup (removed footer, GitHub link, improved menu structure)
 
 ### Current Phase
-**MVP Phase 1: Frontend Migration** - Phase M3 Complete, Phase M4 partially started (M4.1 done)
+**MVP Phase 1: Frontend Migration** - Phase M4 Complete, Phase M5 next
 
 ---
 
@@ -51,7 +54,18 @@ Successfully implemented all tasks in Phase M3 with performance optimizations:
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. **Completed Phase M3: Block System with Performance Optimizations** (December 3, 2024)
+1. **Completed Phase M4: UI Adaptation with Auto-Save System** (December 4, 2024)
+   - Implemented 10-second interval auto-save and auto-save on exit/page unload
+   - Added camera quaternion save/restore for complete view restoration
+   - Fixed load game functionality (renderCustomBlocks method to properly render saved blocks)
+   - Added block counter display (N / 10,000) positioned under FPS counter with warning state
+   - Updated controls help text (renamed Guide to Controls, updated all instructions)
+   - Restored Load Game button with smart enable/disable based on saved data
+   - Added Export button to Escape menu (placeholder for Phase 4)
+   - UI cleanup: Removed footer and GitHub link, improved menu structure
+   - Preserved save/load code (hidden for MVP, ready for production)
+
+2. **Completed Phase M3: Block System with Performance Optimizations** (December 3, 2024)
    - Implemented 10 color block types (removed indigo, moved violet to slot 6, added brown to slot 7)
    - Created solid color materials (MeshStandardMaterial with hex colors)
    - Updated InstancedMesh rendering system for color blocks
@@ -65,7 +79,7 @@ Successfully implemented all tasks in Phase M3 with performance optimizations:
    - Code cleanup: Removed dead code related to indigo block type
    - Updated ground plane to use BlockType.gray and BlockType.yellow
 
-2. **Completed Phase M2: World Initialization** (December 2024)
+3. **Completed Phase M2: World Initialization** (December 2024)
    - Disabled procedural terrain and cloud generation
    - Disabled audio system (silent operation)
    - Created 100x100 grey ground plane at Y=0 with yellow marker grid (11x11 intersections)
@@ -74,30 +88,22 @@ Successfully implemented all tasks in Phase M3 with performance optimizations:
    - Removed generateAdjacentBlocks calls
    - Performance optimizations: blocksMap for O(1) lookups, InstancedMesh for yellow markers
 
-3. **Refactored Highlight System** (December 2024)
-   - Simplified block highlight by raycasting directly against rendered blocks (terrain.blocks[])
-   - Removed separate instanceMesh for raycasting (eliminated range mismatch issues)
-   - Created shared constants.ts with BLOCK_INTERACTION_RANGE (50 units)
-   - Removed dead code (BLOCK_HIGHLIGHT_RANGE)
-   - Fixed inconsistent highlighting - now consistent with block placement/removal range
-   - Increased block placement distance to 50 units
-   - Decreased hold-to-place interval to 0.25s (250ms)
-
 ---
 
 ## Next Steps
 
 ### Immediate (This Session)
-- [x] Complete Phase M3: Block System with performance optimizations
-- [x] Update hotbar UI with color squares (M4.1 partially done)
-- [ ] Complete remaining Phase M4 tasks (block counter, controls help, export button)
+- [x] Complete Phase M4: UI Adaptation (all 5 tasks)
+- [x] Implement auto-save system (10s interval + on exit)
+- [x] Implement camera view restoration (quaternion save/restore)
+- [x] Fix load game functionality
 - [ ] Begin Phase M5: Data Structure enhancements
 
 ### Near-Term (This Week)
 - [x] Complete Phase M1: Camera and Controls (7 tasks)
 - [x] Complete Phase M2: World Initialization (5 tasks)
 - [x] Complete Phase M3: Block System (5 tasks + optimizations)
-- [ ] Complete Phase M4: UI Adaptation (M4.1 done, 4 remaining)
+- [x] Complete Phase M4: UI Adaptation (5 tasks)
 - [ ] Begin Phase M5: Data Structure (3 tasks)
 
 ---
@@ -132,9 +138,12 @@ None - All decisions documented in migration task list.
 - Phase M5: Data Structure (3 tasks)
 
 **Key Decisions Documented**:
-- Camera position: (40, 10, 40) looking at (50, 0, 50)
+- Camera position: Initial (40, 5, 40), new level start (40, 5, 40), both looking at (50, 0, 50)
 - BlockType: New color enum values
 - Ground marking: isGround flag
 - Export: Escape menu button
 - API URL: import.meta.env.VITE_API_URL
 - Level name: "Untitled Level" default
+- Auto-save: 10-second interval (recommended over per-block save for performance)
+- Camera restore: Save quaternion for complete view restoration (not just position)
+- Save/load: Preserved code hidden for MVP, ready for production backend integration
