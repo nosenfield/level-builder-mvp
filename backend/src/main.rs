@@ -1,8 +1,8 @@
 /**
- * Phase 5-6: Backend API Setup with Validation
+ * Phase 5-7: Backend API Setup with Validation and RBXLX Generation
  * 
  * Axum HTTP server with CORS and /api/export endpoint.
- * Accepts Space JSON from frontend, validates it, and returns .rbxlx file.
+ * Accepts Space JSON from frontend, validates it, generates .rbxlx file, and returns it.
  */
 
 use axum::{
@@ -16,9 +16,11 @@ use std::env;
 use tower_http::cors::{Any, CorsLayer};
 
 mod models;
+mod rbxlx;
 mod validation;
 
 use models::SpaceJSON;
+use rbxlx::generate_rbxlx;
 use validation::validate_space_json;
 
 /// Error response structure
@@ -48,25 +50,16 @@ async fn export_handler(Json(payload): Json<SpaceJSON>) -> Result<Response, ApiE
         });
     }
 
-    // For Phase 5, we return a placeholder .rbxlx file
-    // Actual RBXLX generation will be implemented in Phase 7
-
-    // Create placeholder .rbxlx content
-    // This is a minimal valid XML structure that Roblox Studio can recognize
-    // Full generation will be in Phase 7
-    let rbxlx_content = format!(
-        r#"<?xml version="1.0" encoding="utf-8"?>
-<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
-  <Meta name="ExplicitAutoJoints">true</Meta>
-  <External>null</External>
-  <External>nil</External>
-  <Item class="DataModel" referent="RBX0">
-    <Properties>
-      <string name="Name">Level</string>
-    </Properties>
-  </Item>
-</roblox>"#,
-    );
+    // Phase 7: Generate .rbxlx file from validated Space JSON
+    let rbxlx_content = match generate_rbxlx(&payload) {
+        Ok(content) => content,
+        Err(e) => {
+            return Err(ApiError {
+                error: "RBXLX_GENERATION_FAILED".to_string(),
+                message: format!("Failed to generate .rbxlx file: {}", e),
+            });
+        }
+    };
 
     // Return file with proper headers
     let response = Response::builder()
@@ -77,7 +70,10 @@ async fn export_handler(Json(payload): Json<SpaceJSON>) -> Result<Response, ApiE
             format!(r#"attachment; filename="level.rbxlx""#),
         )
         .body(rbxlx_content.into())
-        .unwrap();
+        .map_err(|e| ApiError {
+            error: "RESPONSE_BUILD_FAILED".to_string(),
+            message: format!("Failed to build response: {}", e),
+        })?;
 
     Ok(response)
 }
