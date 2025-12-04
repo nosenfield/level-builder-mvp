@@ -46,23 +46,30 @@
 - [x] M4.4: Remove Unused UI Elements (footer, GitHub link; save/load code preserved hidden)
 - [x] M4.5: Add Export Button to Escape Menu (placeholder implementation)
 
-### Phase M5: Data Structure - ⏳ NOT STARTED
-- [ ] M5.1: Enhance Block Class (add color, isGround, tags, tagConfig)
-- [ ] M5.2: Implement Space JSON Serialization
-- [ ] M5.3: Tag System Design Documentation
+### Phase M5: Data Structure - ✅ COMPLETE
+- [x] M5.1: Enhance Block Class (add color, isGround, tags, tagConfig)
+- [x] M5.2: Implement Space JSON Serialization
+- [x] M5.3: Tag System Design Documentation
 
-### Phase 4: Frontend Export Integration - ⏳ NOT STARTED
-- [ ] 4.1: Implement Space JSON serialization function
-- [ ] 4.2: Add schema version field
-- [ ] 4.3: Implement export button click handler
-- [ ] 4.4: Show loading overlay on export start
-- [ ] 4.5: POST Space JSON to backend `/api/export`
-- [ ] 4.6: Handle successful response (trigger download)
-- [ ] 4.7: Handle error response (display error message)
-- [ ] 4.8: Hide loading overlay on completion
+### Phase 4: Frontend Export Integration - ✅ COMPLETE
+- [x] 4.1: Implement Space JSON serialization function (completed via M5.2)
+- [x] 4.2: Add schema version field (completed via M5.2)
+- [x] 4.3: Implement export button click handler
+- [x] 4.4: Show loading overlay on export start
+- [x] 4.5: POST Space JSON to backend `/api/export`
+- [x] 4.6: Handle successful response (trigger download)
+- [x] 4.7: Handle error response (display error message)
+- [x] 4.8: Hide loading overlay on completion
 
-### Phase 5-10: Backend & Deployment - ⏳ NOT STARTED
-- Backend API setup
+### Phase 5: Backend API Setup - ✅ COMPLETE
+- [x] 5.1: Create Axum HTTP server with CORS enabled
+- [x] 5.2: Define `/api/export` POST endpoint
+- [x] 5.3: Define Space JSON request struct with serde
+- [x] 5.4: Define Block struct with serde
+- [x] 5.5: Implement JSON deserialization
+- [x] 5.6: Return `.rbxlx` as `application/octet-stream` with `Content-Disposition`
+
+### Phase 6-10: Backend & Deployment - ⏳ NOT STARTED
 - Validation
 - RBXLX generation
 - Integration testing
@@ -129,36 +136,59 @@
   - Rebuilds blocksMap for O(1) lookups
   - Updates block counters correctly
   - Load Game button with smart enable/disable based on saved data
+- ✅ **Phase M5: Data Structure**: All tasks completed
+  - Block class enhanced with color, tags, tagConfig properties
+  - Space JSON serialization function implemented (serializeToSpaceJSON)
+  - Tag system design documented for future LLM integration
+  - blockTypeToHex() utility function created
+  - All Block instantiations updated to include color parameter
+  - Backward compatibility for old saves without color property
+  - Export module structure created (frontend/src/export/)
+- ✅ **Phase 4: Frontend Export Integration**: All tasks completed
+  - Export button click handler implemented with full async flow
+  - Loading overlay component created (shows during export)
+  - Error message component created (dismissible, user-friendly)
+  - POST request to backend `/api/export` endpoint implemented
+  - Blob download handling (triggers `.rbxlx` file download)
+  - Comprehensive error handling (network, HTTP, parsing errors)
+  - Loading overlay shows/hides correctly on success and error
+- ✅ **Phase 5: Backend API Setup**: All tasks completed
+  - Rust backend project initialized with Cargo
+  - Axum HTTP server with CORS middleware (allows all origins for MVP)
+  - `/api/export` POST endpoint implemented
+  - Space JSON structs defined with serde (matches frontend schema)
+  - JSON deserialization with automatic error handling
+  - Schema version validation (only version 1 supported)
+  - Returns placeholder `.rbxlx` file with correct headers
+  - Structured error responses (error/message format)
+  - Server configurable via PORT environment variable
 
 ### In Progress
-- ⏳ **Frontend Migration**: Phase M4 complete, Phase M5 next (Data Structure enhancements)
+- None - Phase 5 complete, ready for Phase 6 (Backend Validation)
 
 ---
 
 ## What's Next
 
 ### Priority 1 (Immediate - Next Session)
-- [x] Complete Phase M4: UI Adaptation (all 5 tasks done)
-- [x] Implement auto-save system (10s interval + on exit)
-- [x] Implement camera view restoration
-- [x] Fix load game functionality
-- [ ] Begin Phase M5: Data Structure enhancements
-  - M5.1: Enhance Block class (add color, isGround, tags, tagConfig)
-  - M5.2: Implement Space JSON serialization
-  - M5.3: Tag system design documentation
+- [x] Complete Phase M5: Data Structure enhancements (all 3 tasks done)
+- [x] Complete Phase 4: Frontend Export Integration (all 6 tasks done)
+- [x] Complete Phase 5: Backend API Setup (all 6 tasks done)
+- [ ] Begin Phase 6: Backend Validation
 
 ### Priority 2 (This Week)
 - [x] Complete Phase M1: Camera and Controls (7 tasks)
 - [x] Complete Phase M2: World Initialization (5 tasks)
 - [x] Complete Phase M3: Block System (5 tasks)
 - [x] Complete Phase M4: UI Adaptation (5 tasks)
-- [ ] Begin Phase M5: Data Structure (3 tasks)
+- [x] Complete Phase M5: Data Structure (3 tasks)
+- [x] Complete Phase 4: Frontend Export Integration (6 tasks)
 
 ### Priority 3 (This Month)
-- [x] Complete Phase M3: Block System (5 tasks)
-- [x] Complete Phase M4: UI Adaptation (5 tasks)
-- [ ] Complete Phase M5: Data Structure (3 tasks)
-- [ ] Begin Phase 4: Frontend Export Integration
+- [x] Complete Phase M5: Data Structure (3 tasks)
+- [x] Complete Phase 4: Frontend Export Integration
+- [x] Complete Phase 5: Backend API Setup
+- [ ] Begin Phase 6: Backend Validation
 
 ---
 
@@ -208,4 +238,4 @@ None currently - all blockers resolved during planning phase.
 - ✅ Ready to begin coding
 
 ### Next Session Focus
-Continue with Phase M4: Complete remaining UI tasks (M4.2-M4.5), then begin Phase M5: Data Structure enhancements.
+Begin Phase 6: Backend Validation. Implement validation for schema version, block count, coordinate bounds, color format, and duplicate positions. Return structured error JSON for validation failures.

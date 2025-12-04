@@ -38,7 +38,7 @@
 ```bash
 - Node.js 18+ (for frontend)
 - npm or yarn (package manager)
-- Rust toolchain (for backend - TBD)
+- Rust 1.70+ (for backend - install from rustup.rs)
 - Modern browser with WebGL support
 ```
 
@@ -56,6 +56,13 @@ npm run build
 
 # Preview production build
 npm run preview
+
+# Backend
+cd backend
+cargo build  # Builds dependencies (first time may take a while)
+
+# Start development server
+cargo run  # Runs on port 3000 by default
 ```
 
 ### Environment Variables
@@ -66,13 +73,15 @@ npm run preview
 VITE_API_URL=https://api.example.com/api/export
 ```
 
-**Backend** (TBD):
-```bash
-# Port (default: 3000)
-PORT=3000
+**Note**: Currently not configured. Export will use relative `/api/export` path by default.
 
-# CORS origins (comma-separated)
-CORS_ORIGINS=https://example.com,https://www.example.com
+**Backend** (`.env` or environment variables):
+```bash
+# Port (default: 4000)
+PORT=4000
+
+# CORS is configured to allow all origins for MVP development
+# Production CORS configuration will be added in deployment phase
 ```
 
 ---
@@ -87,14 +96,16 @@ CORS_ORIGINS=https://example.com,https://www.example.com
 - `typescript@^4.5.5` - TypeScript compiler
 - `vite@^2.8.0` - Build tool and dev server
 
-### Backend Dependencies (TBD)
-- `rbx-dom-weak` - Roblox DataModel manipulation
-- `rbx-xml` - XML serialization for `.rbxlx`
-- `rbx-types` - Roblox type definitions
-- `rbx-reflection-database` - Roblox reflection data
-- `axum` or `actix-web` - HTTP framework
-- `tokio` - Async runtime
-- `serde` + `serde_json` - JSON serialization
+### Backend Dependencies (Phase 5 Complete)
+- `axum = "0.7"` - HTTP web framework ✅
+- `tokio = { version = "1", features = ["full"] }` - Async runtime ✅
+- `serde = { version = "1", features = ["derive"] }` - JSON serialization ✅
+- `serde_json = "1"` - JSON parsing ✅
+- `tower-http = { version = "0.5", features = ["cors"] }` - CORS middleware ✅
+- `rbx-dom-weak` - Roblox DataModel manipulation (Phase 7)
+- `rbx-xml` - XML serialization for `.rbxlx` (Phase 7)
+- `rbx-types` - Roblox type definitions (Phase 7)
+- `rbx-reflection-database` - Roblox reflection data (Phase 7)
 
 ### Why We Chose These
 

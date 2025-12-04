@@ -5,25 +5,22 @@
 ## Current Focus
 
 ### What We're Working On Right Now
-**Phase M4: UI Adaptation** - ✅ COMPLETE
+**Phase M5: Data Structure** - ✅ COMPLETE
 
-Successfully completed all Phase M4 tasks:
-- M4.1: Updated hotbar to color palette (color squares with number labels)
-- M4.2: Added block counter display (N / 10,000) positioned under FPS counter
-- M4.3: Updated controls help text (renamed Guide to Controls, updated all control instructions)
-- M4.4: Removed unused UI elements (footer, GitHub link; preserved save/load code hidden for production)
-- M4.5: Added Export button to Escape menu (placeholder implementation ready for Phase 4)
+Successfully completed all Phase M5 tasks:
+- M5.1: Enhanced Block class with color, isGround, tags, tagConfig properties and helper methods
+- M5.2: Implemented Space JSON serialization function (serializeToSpaceJSON)
+- M5.3: Created tag system design documentation
 
 Additional improvements:
-- Implemented 10-second interval auto-save system
-- Auto-save on exit and page unload
-- Camera quaternion save/restore for complete view restoration
-- Fixed load game to properly render saved blocks (renderCustomBlocks method)
-- Restored Load Game button with enable/disable based on saved data
-- UI cleanup (removed footer, GitHub link, improved menu structure)
+- Created blockTypeToHex() utility function for BlockType-to-hex conversion
+- Updated all Block instantiations (4 locations) to include color parameter
+- Added backward compatibility for loading old saves without color property
+- Created export module structure (frontend/src/export/)
 
 ### Current Phase
-**MVP Phase 1: Frontend Migration** - Phase M4 Complete, Phase M5 next
+**MVP Phase 1: Frontend Migration** - Phase M5 Complete ✅
+**Next**: Phase 4: Frontend Export Integration (from task-list.md)
 
 ---
 
@@ -54,7 +51,41 @@ Additional improvements:
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. **Completed Phase M4: UI Adaptation with Auto-Save System** (December 4, 2024)
+1. **Completed Phase 5: Backend API Setup** (December 4, 2024)
+   - Initialized Rust backend project with Cargo
+   - Created Axum HTTP server with CORS middleware (allows all origins for MVP)
+   - Implemented `/api/export` POST endpoint
+   - Defined Space JSON structs with serde (SpaceJSON, Block)
+   - Implemented JSON deserialization with automatic error handling
+   - Added schema version validation (only version 1 supported)
+   - Returns placeholder `.rbxlx` file with correct headers (application/octet-stream, Content-Disposition)
+   - Error handling returns structured JSON errors (error/message format)
+   - Server configurable via PORT environment variable (default: 3000)
+   - Created backend documentation (README.md, .gitignore)
+
+2. **Completed Phase 4: Frontend Export Integration** (December 4, 2024)
+   - Implemented export button click handler with full export flow
+   - Created loading overlay component (shows "Exporting level..." during export)
+   - Created error message component with close button (red styling for errors)
+   - Implemented POST request to backend `/api/export` endpoint
+   - Added blob download handling (triggers `.rbxlx` file download on success)
+   - Added comprehensive error handling (network errors, HTTP errors, parsing errors)
+   - Integrated with existing serializeToSpaceJSON function (schemaVersion 1)
+   - Loading overlay shows/hides correctly on success and error
+   - Error messages are user-friendly and dismissible
+
+3. **Completed Phase M5: Data Structure Enhancements** (December 4, 2024)
+   - Enhanced Block class with color property (required, hex format) for Space JSON export
+   - Added tags and tagConfig properties for future LLM-driven game mechanics
+   - Added 5 helper methods (hasTag, addTag, removeTag, getTagConfig, setTagConfig)
+   - Created blockTypeToHex() utility function to convert BlockType enum to hex color
+   - Updated all Block instantiations (4 locations) to include color parameter
+   - Implemented serializeToSpaceJSON() function with schemaVersion 1 and 2+ support
+   - Created export module structure (frontend/src/export/serialize.ts, index.ts)
+   - Added backward compatibility for loading old saves without color property
+   - Created tag system design documentation (_docs/tag-system-design.md)
+
+3. **Completed Phase M4: UI Adaptation with Auto-Save System** (December 4, 2024)
    - Implemented 10-second interval auto-save and auto-save on exit/page unload
    - Added camera quaternion save/restore for complete view restoration
    - Fixed load game functionality (renderCustomBlocks method to properly render saved blocks)
@@ -65,7 +96,7 @@ Additional improvements:
    - UI cleanup: Removed footer and GitHub link, improved menu structure
    - Preserved save/load code (hidden for MVP, ready for production)
 
-2. **Completed Phase M3: Block System with Performance Optimizations** (December 3, 2024)
+4. **Completed Phase M3: Block System with Performance Optimizations** (December 3, 2024)
    - Implemented 10 color block types (removed indigo, moved violet to slot 6, added brown to slot 7)
    - Created solid color materials (MeshStandardMaterial with hex colors)
    - Updated InstancedMesh rendering system for color blocks
@@ -93,18 +124,24 @@ Additional improvements:
 ## Next Steps
 
 ### Immediate (This Session)
-- [x] Complete Phase M4: UI Adaptation (all 5 tasks)
-- [x] Implement auto-save system (10s interval + on exit)
-- [x] Implement camera view restoration (quaternion save/restore)
-- [x] Fix load game functionality
-- [ ] Begin Phase M5: Data Structure enhancements
+- [x] Complete Phase M5: Data Structure enhancements (all 3 tasks)
+- [x] Complete Phase 4: Frontend Export Integration (all 6 tasks)
+- [x] Complete Phase 5: Backend API Setup (all 6 tasks)
+  - 5.1: Create Axum HTTP server with CORS ✅
+  - 5.2: Define `/api/export` POST endpoint ✅
+  - 5.3: Define Space JSON request struct with serde ✅
+  - 5.4: Define Block struct with serde ✅
+  - 5.5: Implement JSON deserialization ✅
+  - 5.6: Return `.rbxlx` as `application/octet-stream` ✅
 
 ### Near-Term (This Week)
 - [x] Complete Phase M1: Camera and Controls (7 tasks)
 - [x] Complete Phase M2: World Initialization (5 tasks)
 - [x] Complete Phase M3: Block System (5 tasks + optimizations)
 - [x] Complete Phase M4: UI Adaptation (5 tasks)
-- [ ] Begin Phase M5: Data Structure (3 tasks)
+- [x] Complete Phase M5: Data Structure (3 tasks)
+- [x] Complete Phase 4: Frontend Export Integration (6 tasks)
+- [x] Complete Phase 5: Backend API Setup (6 tasks)
 
 ---
 
@@ -120,22 +157,37 @@ None - All decisions documented in migration task list.
 
 ## Key Files Currently Modified
 
-- `_docs/frontend-migration-task-list.md` - Complete migration plan (543 lines)
-- `memory-bank/activeContext.md` - This file (being updated)
-- `memory-bank/progress.md` - Progress tracking (to be updated)
-- `memory-bank/systemPatterns.md` - Architecture patterns (to be updated)
-- `memory-bank/techContext.md` - Tech stack details (to be updated)
+- `backend/src/main.rs` - Axum HTTP server with `/api/export` endpoint
+- `backend/src/models.rs` - Space JSON structs (SpaceJSON, Block) with serde
+- `backend/Cargo.toml` - Rust dependencies (axum, tokio, serde, tower-http)
+- `backend/README.md` - Backend setup and API documentation
+- `backend/.gitignore` - Rust-specific gitignore patterns
+- `frontend/src/ui/index.ts` - Export handler, loading overlay, error message methods
+- `frontend/src/export/serialize.ts` - Space JSON serialization function
 
 ## Implementation Readiness
 
-**Status**: ✅ Ready to begin implementation
+**Status**: ✅ Ready for Phase 4: Frontend Export Integration
 
-**Migration Task List**: Complete with 23 tasks across 5 phases
-- Phase M1: Camera/Controls (7 tasks)
-- Phase M2: World Init (5 tasks)
-- Phase M3: Block System (5 tasks)
-- Phase M4: UI Adaptation (5 tasks)
-- Phase M5: Data Structure (3 tasks)
+**Migration Task List**: ✅ COMPLETE - All 23 tasks across 5 phases done
+- Phase M1: Camera/Controls (7 tasks) ✅
+- Phase M2: World Init (5 tasks) ✅
+- Phase M3: Block System (5 tasks) ✅
+- Phase M4: UI Adaptation (5 tasks) ✅
+- Phase M5: Data Structure (3 tasks) ✅
+
+**Phase 4 Status**: ✅ COMPLETE
+- 4.1 ✅ Complete (via M5.2)
+- 4.2 ✅ Complete (via M5.2)
+- 4.3-4.8 ✅ Complete (all 6 tasks implemented)
+
+**Phase 5 Status**: ✅ COMPLETE
+- 5.1 ✅ Complete (Axum server with CORS)
+- 5.2 ✅ Complete (`/api/export` POST endpoint)
+- 5.3 ✅ Complete (Space JSON struct with serde)
+- 5.4 ✅ Complete (Block struct with serde)
+- 5.5 ✅ Complete (JSON deserialization)
+- 5.6 ✅ Complete (Returns `.rbxlx` with correct headers)
 
 **Key Decisions Documented**:
 - Camera position: Initial (40, 5, 40), new level start (40, 5, 40), both looking at (50, 0, 50)

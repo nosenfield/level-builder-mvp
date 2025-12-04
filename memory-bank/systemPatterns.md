@@ -42,7 +42,10 @@ frontend/src/
 │   └── worker/     # Terrain generation workers
 ├── ui/             # UI components (hotbar, FPS, joystick)
 ├── audio/          # Sound effects and music
-└── utils/          # Utility functions
+├── utils/          # Utility functions (blockTypeToHex, etc.)
+└── export/         # Export functionality
+    ├── serialize.ts # Space JSON serialization
+    └── index.ts     # Export module index
 ```
 
 **Backend** (Rust - to be implemented):
@@ -270,7 +273,82 @@ camera.quaternion.set(x, y, z, w)
 - Handles all rotation scenarios (pitch, yaw, roll)
 - Small data size (4 numbers for quaternion)
 
-### Pattern 11: Block Rendering on Load
+### Pattern 11: BlockType-to-Hex Color Conversion
+**When to use**: Converting BlockType enum values to hex color strings for export
+**Example**:
+```typescript
+// Utility function in utils/index.ts
+export function blockTypeToHex(type: BlockType): string {
+  const colorMap: Partial<Record<BlockType, string>> = {
+    [BlockType.red]: COLOR_RED,
+    [BlockType.orange]: COLOR_ORANGE,
+    // ... etc
+  }
+  return colorMap[type] ?? COLOR_GRAY // Default fallback
+}
+
+// Usage when creating blocks
+const block = new Block(
+  x, y, z,
+  BlockType.red,
+  true,
+  blockTypeToHex(BlockType.red) // Convert enum to hex
+)
+```
+
+**Why**: 
+- Ensures color property always matches BlockType
+- Single source of truth for color mapping
+- Easy to maintain (update constants.ts if colors change)
+- Type-safe conversion
+
+### Pattern 12: Space JSON Serialization
+**When to use**: Exporting blocks to backend for .rbxlx generation
+**Example**:
+```typescript
+// Serialize blocks to Space JSON format
+const spaceJSON = serializeToSpaceJSON(
+  terrain.customBlocks,
+  1, // schemaVersion 1 for MVP
+  'Untitled Level'
+)
+
+// Function filters and maps blocks
+function serializeToSpaceJSON(
+  blocks: Block[],
+  schemaVersion: number = 1,
+  levelName: string = 'Untitled Level'
+): string {
+  // Filter: only placed blocks that are not ground
+  const userPlacedBlocks = blocks.filter(
+    (block) => block.placed === true && block.isGround !== true
+  )
+  
+  // Map to Space JSON format
+  const serializedBlocks = userPlacedBlocks.map((block) => ({
+    x: block.x,
+    y: block.y,
+    z: block.z,
+    color: block.color,
+    // Include tags/configs only for schemaVersion 2+
+    ...(schemaVersion >= 2 && block.tags ? { tags: block.tags, tagConfig: block.tagConfig } : {})
+  }))
+  
+  return JSON.stringify({
+    schemaVersion,
+    name: levelName,
+    blocks: serializedBlocks
+  })
+}
+```
+
+**Why**: 
+- Clean separation of export logic
+- Supports multiple schema versions
+- Filters out non-exportable blocks (removed, ground)
+- Type-safe with TypeScript interfaces
+
+### Pattern 13: Block Rendering on Load
 **When to use**: Rendering saved blocks when loading a game
 **Example**:
 ```typescript
@@ -344,13 +422,16 @@ renderCustomBlocks() {
 
 ### Export Flow
 1. User clicks Export button
-2. Filter `customBlocks` (placed: true, !isGround)
-3. Map blocks to Space JSON format
-4. Serialize to JSON string
-5. POST to backend API
-6. Backend validates and generates `.rbxlx`
-7. Return file with Content-Disposition header
-8. Browser triggers download
+2. Show loading overlay
+3. Filter `customBlocks` (placed: true, !isGround) - done in serializeToSpaceJSON()
+4. Map blocks to Space JSON format - done in serializeToSpaceJSON()
+5. Serialize to JSON string - done in serializeToSpaceJSON()
+6. POST to backend API (`/api/export`)
+7. Backend validates and generates `.rbxlx`
+8. Return file with Content-Disposition header
+9. Browser triggers download (create blob URL, click anchor)
+10. Hide loading overlay (on success or error)
+11. Show error message if export failed
 
 ### State Management
 - **Frontend**: In-memory with localStorage auto-save (10s interval + on exit)
