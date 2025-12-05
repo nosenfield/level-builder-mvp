@@ -48,10 +48,11 @@ pub fn hex_to_color3(hex: &str) -> Result<Color3, String> {
 /// Returns (x, y, z) where:
 /// - x, z: Center of level (average of all block positions)
 /// - y: Highest block Y + 1 (spawn above highest block)
-/// If no blocks, returns default (0, 0.5, 0)
+/// All coordinates are scaled 2x for Roblox studs
+/// If no blocks, returns default (0, 1.0, 0) - scaled from (0, 0.5, 0)
 pub fn calculate_spawn_position(blocks: &[Block]) -> (f32, f32, f32) {
     if blocks.is_empty() {
-        return (0.0, 0.5, 0.0);
+        return (0.0, 1.0, 0.0); // Scaled: 0.5 * 2 = 1.0
     }
     
     let mut sum_x = 0.0;
@@ -68,9 +69,10 @@ pub fn calculate_spawn_position(blocks: &[Block]) -> (f32, f32, f32) {
     
     let center_x = sum_x / blocks.len() as f32;
     let center_z = sum_z / blocks.len() as f32;
-    let spawn_y = max_y + 1.0; // Spawn 1 stud above highest block
+    let spawn_y = max_y + 1.0; // Spawn 1 unit above highest block
     
-    (center_x, spawn_y, center_z)
+    // Scale all coordinates by 2x for Roblox studs
+    (center_x * 2.0, spawn_y * 2.0, center_z * 2.0)
 }
 
 /// Create a Part instance from a Block
@@ -80,12 +82,13 @@ fn create_part_from_block(block: &Block, referent_id: usize) -> InstanceBuilder 
     let color = hex_to_color3(&block.color)
         .unwrap_or_else(|_| Color3::new(0.5, 0.5, 0.5)); // Default to gray on error
 
-    // Convert block position to Roblox coordinates
-    // Y offset: Space JSON Y becomes Part CFrame Y + 0.5 (block center)
+    // Convert block position to Roblox coordinates with 2x scale
+    // Three.js units (1x1x1) scale to Roblox studs (2x2x2)
+    // Y offset: Space JSON Y becomes Part CFrame Y + 1.0 (block center for 2x2x2 block)
     let position = Vector3::new(
-        block.x as f32,
-        block.y as f32 + 0.5,
-        block.z as f32,
+        block.x as f32 * 2.0,
+        block.y as f32 * 2.0 + 1.0,
+        block.z as f32 * 2.0,
     );
 
     // Create identity rotation matrix (no rotation)
@@ -93,10 +96,11 @@ fn create_part_from_block(block: &Block, referent_id: usize) -> InstanceBuilder 
 
     // Create Part with only essential properties
     // Roblox Studio provides sensible defaults for all other properties
+    // Size scaled 2x: Three.js 1x1x1 blocks become 2x2x2 studs in Roblox
     InstanceBuilder::new("Part")
         .with_property("Name", format!("Block{}", referent_id))
         .with_property("CFrame", cframe)
-        .with_property("Size", Vector3::new(1.0, 1.0, 1.0))
+        .with_property("Size", Vector3::new(2.0, 2.0, 2.0))
         .with_property("Color", color)
         .with_property("Anchored", true)
 }
@@ -214,7 +218,7 @@ mod tests {
         let blocks = vec![];
         let (x, y, z) = calculate_spawn_position(&blocks);
         assert_eq!(x, 0.0);
-        assert_eq!(y, 0.5);
+        assert_eq!(y, 1.0); // Scaled: 0.5 * 2 = 1.0
         assert_eq!(z, 0.0);
     }
 
@@ -227,9 +231,9 @@ mod tests {
             color: "#FF0000".to_string(),
         }];
         let (x, y, z) = calculate_spawn_position(&blocks);
-        assert_eq!(x, 10.0);
-        assert_eq!(y, 6.0); // Highest Y (5) + 1
-        assert_eq!(z, 20.0);
+        assert_eq!(x, 20.0); // Scaled: 10 * 2 = 20.0
+        assert_eq!(y, 12.0); // Scaled: (5 + 1) * 2 = 12.0
+        assert_eq!(z, 40.0); // Scaled: 20 * 2 = 40.0
     }
 
     #[test]
@@ -255,9 +259,9 @@ mod tests {
             },
         ];
         let (x, y, z) = calculate_spawn_position(&blocks);
-        assert_eq!(x, 10.0); // Average of 0, 10, 20
-        assert_eq!(y, 6.0); // Highest Y (5) + 1
-        assert_eq!(z, 10.0); // Average of 0, 10, 20
+        assert_eq!(x, 20.0); // Scaled: (0 + 10 + 20) / 3 * 2 = 20.0
+        assert_eq!(y, 12.0); // Scaled: (5 + 1) * 2 = 12.0
+        assert_eq!(z, 20.0); // Scaled: (0 + 10 + 20) / 3 * 2 = 20.0
     }
 
     #[test]
@@ -558,14 +562,14 @@ mod tests {
         let part_count = xml_str.matches("<Item class=\"Part\"").count();
         assert_eq!(part_count, 6, "Should have 6 Parts (one per edge case)");
         
-        // Verify spawn position is calculated correctly
-        // Center X: (-500 + 500 + 0 + 0 + 0 + 0) / 6 = 0
-        // Center Z: (0 + 0 - 500 + 500 + 0 + 0) / 6 = 0
-        // Highest Y: 500 + 1 = 501
+        // Verify spawn position is calculated correctly (scaled 2x)
+        // Center X: (-500 + 500 + 0 + 0 + 0 + 0) / 6 = 0, scaled: 0 * 2 = 0
+        // Center Z: (0 + 0 - 500 + 500 + 0 + 0) / 6 = 0, scaled: 0 * 2 = 0
+        // Highest Y: 500 + 1 = 501, scaled: 501 * 2 = 1002
         let (spawn_x, spawn_y, spawn_z) = calculate_spawn_position(&space_json.blocks);
-        assert_eq!(spawn_x, 0.0, "Spawn X should be center (0)");
-        assert_eq!(spawn_y, 501.0, "Spawn Y should be highest Y (500) + 1");
-        assert_eq!(spawn_z, 0.0, "Spawn Z should be center (0)");
+        assert_eq!(spawn_x, 0.0, "Spawn X should be center (0), scaled: 0 * 2 = 0");
+        assert_eq!(spawn_y, 1002.0, "Spawn Y should be highest Y (500) + 1, scaled: 501 * 2 = 1002");
+        assert_eq!(spawn_z, 0.0, "Spawn Z should be center (0), scaled: 0 * 2 = 0");
         
         // Verify spawn location exists (exact position format may vary in XML)
         // The spawn calculation is tested separately, so we just verify SpawnLocation exists
