@@ -28,7 +28,7 @@
 - Test data generation script (`scripts/generate-test-rbxlx.sh`)
 - 6 comprehensive integration tests in `backend/src/rbxlx.rs`
 
-**Total Tests**: 42 passing (26 validation + 9 RBXLX + 6 Phase 8 integration + 1 integration)
+**Total Tests**: 46 passing (26 validation + 9 RBXLX + 6 Phase 8 integration + 1 integration + 4 baseplate/spawn platform)
 
 ### Current Phase
 **MVP Backend Development** - Phase 8 Complete (11/11 tasks complete)
@@ -63,7 +63,15 @@
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. **Completed Phase 8: Integration Testing** (December 2024)
+1. **Added Baseplate and Spawn Platform** (December 2024)
+   - Added Baseplate Part (200x16x200 studs) positioned at (0, -8, 0) so top surface is at Y=0
+   - Baseplate matches 100x100 ground plane scaled 2x, with gray color and Plastic material
+   - Updated SpawnLocation to fixed position (0, 0.5, 0) and size (12x1x12 studs) - always at center regardless of blocks
+   - Added Decal child to SpawnLocation with SpawnLocation texture on Top face
+   - Updated all Phase 8 integration tests to account for baseplate Part in counts
+   - All 46 tests passing (42 previous + 4 new tests for baseplate/spawn platform)
+
+2. **Completed Phase 8: Integration Testing** (December 2024)
    - Fixed Parts not appearing in Workspace: Changed XML serialization to pass `dom.root().children()` instead of DataModel root, removing the `<Item class="DataModel">` wrapper that Roblox Studio doesn't expect
    - Fixed Lighting Technology migration warning: Added Technology property set to 3 (ShadowMap) to Lighting service
    - Fixed duplicate Camera issue: Removed custom Camera from Workspace (Roblox Studio creates its own automatically)
@@ -171,6 +179,10 @@
 - [x] Complete Phase 8: Integration Testing (11/11 tasks complete)
   - 8.1-8.6: Automated tests ✅ (all passing)
   - 8.7-8.11: Manual tests ✅ (all verified in Roblox Studio)
+- [x] Add Baseplate and Spawn Platform to RBXLX export
+  - Baseplate Part (200x16x200 studs) at (0, -8, 0) ✅
+  - SpawnLocation fixed position (0, 0.5, 0) and size (12x1x12) ✅
+  - Decal child with SpawnLocation texture ✅
 - [ ] Begin Phase 9-10: Error Handling & Deployment
 
 ### Near-Term (This Week)
@@ -199,7 +211,7 @@ None - All decisions documented in migration task list.
 ## Key Files Currently Modified
 
 - `backend/src/main.rs` - Axum HTTP server with `/api/export` endpoint (updated to use RBXLX generation)
-- `backend/src/rbxlx.rs` - RBXLX generation module with minimal Part properties and correct XML structure (services as direct children of <roblox>, not wrapped in DataModel)
+- `backend/src/rbxlx.rs` - RBXLX generation module with minimal Part properties and correct XML structure (services as direct children of <roblox>, not wrapped in DataModel). Now includes Baseplate Part and SpawnLocation with Decal child.
 - `backend/src/validation.rs` - Validation module with all validation functions and tests
 - `backend/src/models.rs` - Space JSON structs (SpaceJSON, Block) with serde
 - `backend/Cargo.toml` - Rust dependencies (axum, tokio, serde, tower-http, rbx_dom_weak, rbx_xml, rbx_types)
