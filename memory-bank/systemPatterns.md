@@ -48,14 +48,14 @@ frontend/src/
     └── index.ts     # Export module index
 ```
 
-**Backend** (Rust - to be implemented):
+**Backend** (Rust - implemented):
 ```
 backend/
 ├── src/
-│   ├── api/        # HTTP handlers (Axum/Actix-web)
-│   ├── export/     # Space JSON → .rbxlx conversion
-│   ├── validation/ # Input validation
-│   └── models/     # Data structures
+│   ├── main.rs     # Axum HTTP server with /api/export endpoint
+│   ├── rbxlx.rs    # Space JSON → .rbxlx conversion (rbx_dom_weak + rbx_xml)
+│   ├── validation.rs # Input validation (schema, bounds, colors, duplicates)
+│   └── models.rs   # Space JSON structs (SpaceJSON, Block) with serde
 ```
 
 ---
@@ -348,6 +348,44 @@ function serializeToSpaceJSON(
 - Filters out non-exportable blocks (removed, ground)
 - Type-safe with TypeScript interfaces
 
+### Pattern 14: Minimal Part Properties for RBXLX
+**When to use**: Creating Part instances in Roblox DataModel for .rbxlx export
+**Example**:
+```rust
+// Create Part with only essential properties
+// Roblox Studio provides sensible defaults for all other properties
+InstanceBuilder::new("Part")
+    .with_property("Name", format!("Block{}", referent_id))
+    .with_property("CFrame", cframe)
+    .with_property("Size", Vector3::new(1.0, 1.0, 1.0))
+    .with_property("Color", color)
+    .with_property("Anchored", true)
+```
+
+**Why**: 
+- Roblox Studio automatically fills in 40+ default properties (Material, Shape, Surface properties, etc.)
+- Reduces code complexity and maintenance burden
+- Ensures compatibility with Roblox Studio's expectations
+- Smaller XML files (faster generation and download)
+- Less chance of property value mismatches
+
+### Pattern 15: Correct RBXLX XML Structure
+**When to use**: Serializing Roblox DataModel to .rbxlx XML format
+**Example**:
+```rust
+// IMPORTANT: Pass the children of the DataModel (Workspace, Players, etc.),
+// NOT the DataModel itself. Roblox .rbxlx files should have services as
+// direct children of <roblox>, not wrapped in DataModel.
+let top_level_refs: Vec<_> = dom.root().children().to_vec();
+rbx_xml::to_writer_default(Cursor::new(&mut output), &dom, &top_level_refs)?;
+```
+
+**Why**: 
+- Roblox Studio expects services (Workspace, Players, Lighting, etc.) as direct children of `<roblox>` root element
+- Wrapping in `<Item class="DataModel">` causes Parts to not appear in Workspace hierarchy
+- Matches Roblox Studio's own export format
+- Ensures proper instance hierarchy and references
+
 ### Pattern 13: Block Rendering on Load
 **When to use**: Rendering saved blocks when loading a game
 **Example**:
@@ -450,6 +488,8 @@ renderCustomBlocks() {
 - **How we use it**: POST Space JSON, receive binary file response
 - **Failure handling**: Display error message to user, log error details
 - **Expected response**: 200 OK with `.rbxlx` file, or 400/500 with error JSON
+- **Implementation**: Rust backend using Axum, rbx_dom_weak, and rbx_xml
+- **Key behavior**: Generates minimal Part properties, correct XML structure (services as direct children of `<roblox>`)
 
 ### Roblox Studio (User's Local)
 - **Purpose**: Play testing exported levels

@@ -96,16 +96,15 @@ PORT=4000
 - `typescript@^4.5.5` - TypeScript compiler
 - `vite@^2.8.0` - Build tool and dev server
 
-### Backend Dependencies (Phase 5 Complete)
+### Backend Dependencies (All Complete)
 - `axum = "0.7"` - HTTP web framework ✅
 - `tokio = { version = "1", features = ["full"] }` - Async runtime ✅
 - `serde = { version = "1", features = ["derive"] }` - JSON serialization ✅
 - `serde_json = "1"` - JSON parsing ✅
 - `tower-http = { version = "0.5", features = ["cors"] }` - CORS middleware ✅
-- `rbx-dom-weak` - Roblox DataModel manipulation (Phase 7)
-- `rbx-xml` - XML serialization for `.rbxlx` (Phase 7)
-- `rbx-types` - Roblox type definitions (Phase 7)
-- `rbx-reflection-database` - Roblox reflection data (Phase 7)
+- `rbx_dom_weak = "4.0"` - Roblox DataModel manipulation ✅
+- `rbx_xml = "2.0"` - XML serialization for `.rbxlx` ✅
+- `rbx_types = "3.0"` - Roblox type definitions (Color3, Vector3, CFrame, etc.) ✅
 
 ### Why We Chose These
 
@@ -200,7 +199,19 @@ npm run build
 
 #### Issue 4: Export returns invalid file
 **Symptoms**: Roblox Studio shows error opening file
-**Solution**: Check backend validation, verify Space JSON schema, check rbx-dom version compatibility
+**Solution**: Check backend validation, verify Space JSON schema, check rbx_xml version compatibility
+
+#### Issue 6: Parts not appearing in Roblox Studio
+**Symptoms**: File opens but no blocks visible in Workspace
+**Solution**: Ensure XML serialization passes `dom.root().children()` instead of DataModel root. Services must be direct children of `<roblox>`, not wrapped in `<Item class="DataModel">`.
+
+#### Issue 7: Lighting Technology migration warning
+**Symptoms**: Roblox Studio shows "Compatibility Lighting" migration warning
+**Solution**: Set Lighting service Technology property to 3 (ShadowMap) before serialization.
+
+#### Issue 8: Duplicate Camera in scene
+**Symptoms**: Multiple Camera instances in Workspace
+**Solution**: Don't create custom Camera - Roblox Studio creates its own automatically with proper CurrentCamera reference.
 
 #### Issue 5: Performance issues with many blocks
 **Symptoms**: Low FPS, laggy interactions
