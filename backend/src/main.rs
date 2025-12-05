@@ -15,13 +15,10 @@ use serde_json::json;
 use std::env;
 use tower_http::cors::{Any, CorsLayer};
 
-mod models;
-mod rbxlx;
-mod validation;
-
-use models::SpaceJSON;
-use rbxlx::generate_rbxlx;
-use validation::validate_space_json;
+// Modules are now in lib.rs
+use backend::models::SpaceJSON;
+use backend::rbxlx::generate_rbxlx;
+use backend::validation::validate_space_json;
 
 /// Error response structure
 #[derive(Debug)]
