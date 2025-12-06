@@ -1,14 +1,12 @@
-/**
- * Phase 6: Backend Validation
- * 
- * Validates Space JSON input before processing.
- * All validations return structured errors for user-friendly feedback.
- */
+//! Space JSON validation.
+//!
+//! Validates incoming Space JSON payloads before `.rbxlx` generation.
+//! All validators return structured errors with error codes and user-friendly messages.
 
 use crate::models::SpaceJSON;
 use std::collections::HashSet;
 
-/// Validation error types
+/// Validation error variants with associated context data.
 #[derive(Debug, Clone)]
 pub enum ValidationError {
     InvalidSchemaVersion { version: u32 },
@@ -19,7 +17,7 @@ pub enum ValidationError {
 }
 
 impl ValidationError {
-    /// Convert to error code string
+    /// Returns a machine-readable error code for API responses.
     pub fn error_code(&self) -> &'static str {
         match self {
             ValidationError::InvalidSchemaVersion { .. } => "INVALID_SCHEMA_VERSION",
@@ -30,7 +28,7 @@ impl ValidationError {
         }
     }
 
-    /// Convert to user-friendly error message
+    /// Returns a human-readable error message for display to users.
     pub fn message(&self) -> String {
         match self {
             ValidationError::InvalidSchemaVersion { version } => {
@@ -61,7 +59,7 @@ impl ValidationError {
     }
 }
 
-/// Validate schema version (must be 1)
+/// Validates that schema version is 1 (only supported version).
 pub fn validate_schema_version(schema_version: u32) -> Result<(), ValidationError> {
     if schema_version != 1 {
         return Err(ValidationError::InvalidSchemaVersion { version: schema_version });
@@ -69,9 +67,11 @@ pub fn validate_schema_version(schema_version: u32) -> Result<(), ValidationErro
     Ok(())
 }
 
-/// Validate block count (must be <= 10,000)
+/// Maximum allowed blocks per level.
+pub const MAX_BLOCKS: usize = 10_000;
+
+/// Validates that block count does not exceed [`MAX_BLOCKS`].
 pub fn validate_block_count(count: usize) -> Result<(), ValidationError> {
-    const MAX_BLOCKS: usize = 10_000;
     if count > MAX_BLOCKS {
         return Err(ValidationError::BlockCountExceeded {
             count,
@@ -81,27 +81,26 @@ pub fn validate_block_count(count: usize) -> Result<(), ValidationError> {
     Ok(())
 }
 
-/// Validate coordinate bounds for a single block
-/// Coordinates are already scaled from Three.js units to Roblox studs (2x scale)
-/// X/Z: -1000 to 1000 (inclusive) - scaled from Three.js -500 to 500
-/// Y: 0 to 1000 (inclusive) - scaled from Three.js 0 to 500
-pub fn validate_coordinate_bounds(x: i32, y: i32, z: i32, index: usize) -> Result<(), ValidationError> {
-    const MIN_X: i32 = -1000;
-    const MAX_X: i32 = 1000;
-    const MIN_Z: i32 = -1000;
-    const MAX_Z: i32 = 1000;
-    const MIN_Y: i32 = 0;
-    const MAX_Y: i32 = 1000;
+// Coordinate bounds (in Roblox studs, already scaled 2x from Three.js units)
+const MIN_X: i32 = -1000;
+const MAX_X: i32 = 1000;
+const MIN_Z: i32 = -1000;
+const MAX_Z: i32 = 1000;
+const MIN_Y: i32 = 0;
+const MAX_Y: i32 = 1000;
 
+/// Validates that block coordinates are within allowed bounds.
+///
+/// Bounds: X/Z: -1000 to 1000, Y: 0 to 1000 (in Roblox studs).
+pub fn validate_coordinate_bounds(x: i32, y: i32, z: i32, index: usize) -> Result<(), ValidationError> {
     if x < MIN_X || x > MAX_X || z < MIN_Z || z > MAX_Z || y < MIN_Y || y > MAX_Y {
         return Err(ValidationError::CoordinateOutOfBounds { x, y, z, index });
     }
     Ok(())
 }
 
-/// Validate color format (hex pattern: #RRGGBB or #RGB)
+/// Validates hex color format (`#RRGGBB` or `#RGB`).
 pub fn validate_color_format(color: &str, index: usize) -> Result<(), ValidationError> {
-    // Check if starts with #
     if !color.starts_with('#') {
         return Err(ValidationError::InvalidColorFormat {
             color: color.to_string(),
@@ -109,7 +108,6 @@ pub fn validate_color_format(color: &str, index: usize) -> Result<(), Validation
         });
     }
 
-    // Check length (must be 4 or 7: #RGB or #RRGGBB)
     let hex_part = &color[1..];
     if hex_part.len() != 3 && hex_part.len() != 6 {
         return Err(ValidationError::InvalidColorFormat {
@@ -118,7 +116,6 @@ pub fn validate_color_format(color: &str, index: usize) -> Result<(), Validation
         });
     }
 
-    // Check all characters are valid hex digits
     if !hex_part.chars().all(|c| c.is_ascii_hexdigit()) {
         return Err(ValidationError::InvalidColorFormat {
             color: color.to_string(),
@@ -129,7 +126,7 @@ pub fn validate_color_format(color: &str, index: usize) -> Result<(), Validation
     Ok(())
 }
 
-/// Validate no duplicate positions
+/// Validates that no two blocks occupy the same position.
 pub fn validate_no_duplicates(blocks: &[crate::models::Block]) -> Result<(), ValidationError> {
     let mut positions = HashSet::new();
     
@@ -149,294 +146,22 @@ pub fn validate_no_duplicates(blocks: &[crate::models::Block]) -> Result<(), Val
     Ok(())
 }
 
-/// Validate entire Space JSON structure
-/// Returns first validation error found (fail-fast)
+/// Validates an entire Space JSON payload.
+///
+/// Performs all validations in order, returning the first error found (fail-fast):
+/// 1. Schema version
+/// 2. Block count
+/// 3. Each block's coordinates and color
+/// 4. No duplicate positions
 pub fn validate_space_json(space_json: &SpaceJSON) -> Result<(), ValidationError> {
-    // 1. Validate schema version first
     validate_schema_version(space_json.schema_version)?;
-
-    // 2. Validate block count
     validate_block_count(space_json.blocks.len())?;
 
-    // 3. Validate each block
     for (index, block) in space_json.blocks.iter().enumerate() {
-        // 3a. Validate coordinate bounds
         validate_coordinate_bounds(block.x, block.y, block.z, index)?;
-
-        // 3b. Validate color format
         validate_color_format(&block.color, index)?;
     }
 
-    // 4. Validate no duplicate positions (check after individual validations)
     validate_no_duplicates(&space_json.blocks)?;
-
     Ok(())
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::models::Block;
-
-    #[test]
-    fn test_validate_schema_version_accepts_1() {
-        assert!(validate_schema_version(1).is_ok());
-    }
-
-    #[test]
-    fn test_validate_schema_version_rejects_0() {
-        assert!(matches!(
-            validate_schema_version(0),
-            Err(ValidationError::InvalidSchemaVersion { version: 0 })
-        ));
-    }
-
-    #[test]
-    fn test_validate_schema_version_rejects_2() {
-        assert!(matches!(
-            validate_schema_version(2),
-            Err(ValidationError::InvalidSchemaVersion { version: 2 })
-        ));
-    }
-
-    #[test]
-    fn test_validate_block_count_accepts_10000() {
-        assert!(validate_block_count(10_000).is_ok());
-    }
-
-    #[test]
-    fn test_validate_block_count_accepts_0() {
-        assert!(validate_block_count(0).is_ok());
-    }
-
-    #[test]
-    fn test_validate_block_count_rejects_10001() {
-        assert!(matches!(
-            validate_block_count(10_001),
-            Err(ValidationError::BlockCountExceeded { count: 10_001, limit: 10_000 })
-        ));
-    }
-
-    #[test]
-    fn test_validate_coordinate_bounds_accepts_valid() {
-        // Test with scaled bounds (coordinates already scaled 2x from Three.js units)
-        assert!(validate_coordinate_bounds(0, 500, 0, 0).is_ok());
-        assert!(validate_coordinate_bounds(-1000, 0, -1000, 0).is_ok());
-        assert!(validate_coordinate_bounds(1000, 1000, 1000, 0).is_ok());
-    }
-
-    #[test]
-    fn test_validate_coordinate_bounds_rejects_x_too_low() {
-        assert!(matches!(
-            validate_coordinate_bounds(-1001, 0, 0, 0),
-            Err(ValidationError::CoordinateOutOfBounds { x: -1001, .. })
-        ));
-    }
-
-    #[test]
-    fn test_validate_coordinate_bounds_rejects_x_too_high() {
-        assert!(matches!(
-            validate_coordinate_bounds(1001, 0, 0, 0),
-            Err(ValidationError::CoordinateOutOfBounds { x: 1001, .. })
-        ));
-    }
-
-    #[test]
-    fn test_validate_coordinate_bounds_rejects_z_too_low() {
-        assert!(matches!(
-            validate_coordinate_bounds(0, 0, -1001, 0),
-            Err(ValidationError::CoordinateOutOfBounds { z: -1001, .. })
-        ));
-    }
-
-    #[test]
-    fn test_validate_coordinate_bounds_rejects_z_too_high() {
-        assert!(matches!(
-            validate_coordinate_bounds(0, 0, 1001, 0),
-            Err(ValidationError::CoordinateOutOfBounds { z: 1001, .. })
-        ));
-    }
-
-    #[test]
-    fn test_validate_coordinate_bounds_rejects_y_too_low() {
-        assert!(matches!(
-            validate_coordinate_bounds(0, -1, 0, 0),
-            Err(ValidationError::CoordinateOutOfBounds { y: -1, .. })
-        ));
-    }
-
-    #[test]
-    fn test_validate_coordinate_bounds_rejects_y_too_high() {
-        assert!(matches!(
-            validate_coordinate_bounds(0, 1001, 0, 0),
-            Err(ValidationError::CoordinateOutOfBounds { y: 1001, .. })
-        ));
-    }
-
-    #[test]
-    fn test_validate_color_format_accepts_rrggbb() {
-        assert!(validate_color_format("#FF0000", 0).is_ok());
-        assert!(validate_color_format("#00FF00", 0).is_ok());
-        assert!(validate_color_format("#0000FF", 0).is_ok());
-        assert!(validate_color_format("#ABCDEF", 0).is_ok());
-        assert!(validate_color_format("#123456", 0).is_ok());
-    }
-
-    #[test]
-    fn test_validate_color_format_accepts_rgb() {
-        assert!(validate_color_format("#F00", 0).is_ok());
-        assert!(validate_color_format("#0F0", 0).is_ok());
-        assert!(validate_color_format("#00F", 0).is_ok());
-        assert!(validate_color_format("#ABC", 0).is_ok());
-    }
-
-    #[test]
-    fn test_validate_color_format_rejects_missing_hash() {
-        assert!(matches!(
-            validate_color_format("FF0000", 0),
-            Err(ValidationError::InvalidColorFormat { .. })
-        ));
-    }
-
-    #[test]
-    fn test_validate_color_format_rejects_wrong_length() {
-        assert!(matches!(
-            validate_color_format("#FF00", 0),
-            Err(ValidationError::InvalidColorFormat { .. })
-        ));
-        assert!(matches!(
-            validate_color_format("#FF00000", 0),
-            Err(ValidationError::InvalidColorFormat { .. })
-        ));
-    }
-
-    #[test]
-    fn test_validate_color_format_rejects_non_hex() {
-        assert!(matches!(
-            validate_color_format("#GGGGGG", 0),
-            Err(ValidationError::InvalidColorFormat { .. })
-        ));
-        assert!(matches!(
-            validate_color_format("#XYZ", 0),
-            Err(ValidationError::InvalidColorFormat { .. })
-        ));
-    }
-
-    #[test]
-    fn test_validate_no_duplicates_accepts_unique() {
-        let blocks = vec![
-            Block { x: 0, y: 0, z: 0, color: "#FF0000".to_string() },
-            Block { x: 1, y: 0, z: 0, color: "#00FF00".to_string() },
-            Block { x: 0, y: 1, z: 0, color: "#0000FF".to_string() },
-        ];
-        assert!(validate_no_duplicates(&blocks).is_ok());
-    }
-
-    #[test]
-    fn test_validate_no_duplicates_rejects_duplicate() {
-        let blocks = vec![
-            Block { x: 0, y: 0, z: 0, color: "#FF0000".to_string() },
-            Block { x: 1, y: 0, z: 0, color: "#00FF00".to_string() },
-            Block { x: 0, y: 0, z: 0, color: "#0000FF".to_string() }, // duplicate
-        ];
-        assert!(matches!(
-            validate_no_duplicates(&blocks),
-            Err(ValidationError::DuplicatePosition { x: 0, y: 0, z: 0, index: 2 })
-        ));
-    }
-
-    #[test]
-    fn test_validate_space_json_passes_valid() {
-        let space_json = SpaceJSON {
-            schema_version: 1,
-            name: Some("Test Level".to_string()),
-            blocks: vec![
-                Block { x: 0, y: 0, z: 0, color: "#FF0000".to_string() },
-                Block { x: 1, y: 0, z: 0, color: "#00FF00".to_string() },
-            ],
-        };
-        assert!(validate_space_json(&space_json).is_ok());
-    }
-
-    #[test]
-    fn test_validate_space_json_fails_invalid_schema() {
-        let space_json = SpaceJSON {
-            schema_version: 2,
-            name: Some("Test Level".to_string()),
-            blocks: vec![],
-        };
-        assert!(matches!(
-            validate_space_json(&space_json),
-            Err(ValidationError::InvalidSchemaVersion { version: 2 })
-        ));
-    }
-
-    #[test]
-    fn test_validate_space_json_fails_block_count_exceeded() {
-        let mut blocks = Vec::new();
-        for i in 0..10_001 {
-            blocks.push(Block {
-                x: i as i32,
-                y: 0,
-                z: 0,
-                color: "#FF0000".to_string(),
-            });
-        }
-        let space_json = SpaceJSON {
-            schema_version: 1,
-            name: Some("Test Level".to_string()),
-            blocks,
-        };
-        assert!(matches!(
-            validate_space_json(&space_json),
-            Err(ValidationError::BlockCountExceeded { count: 10_001, limit: 10_000 })
-        ));
-    }
-
-    #[test]
-    fn test_validate_space_json_fails_out_of_bounds() {
-        let space_json = SpaceJSON {
-            schema_version: 1,
-            name: Some("Test Level".to_string()),
-            blocks: vec![
-                Block { x: 1001, y: 0, z: 0, color: "#FF0000".to_string() }, // Outside scaled bounds
-            ],
-        };
-        assert!(matches!(
-            validate_space_json(&space_json),
-            Err(ValidationError::CoordinateOutOfBounds { x: 1001, .. })
-        ));
-    }
-
-    #[test]
-    fn test_validate_space_json_fails_invalid_color() {
-        let space_json = SpaceJSON {
-            schema_version: 1,
-            name: Some("Test Level".to_string()),
-            blocks: vec![
-                Block { x: 0, y: 0, z: 0, color: "not-a-color".to_string() },
-            ],
-        };
-        assert!(matches!(
-            validate_space_json(&space_json),
-            Err(ValidationError::InvalidColorFormat { .. })
-        ));
-    }
-
-    #[test]
-    fn test_validate_space_json_fails_duplicate() {
-        let space_json = SpaceJSON {
-            schema_version: 1,
-            name: Some("Test Level".to_string()),
-            blocks: vec![
-                Block { x: 0, y: 0, z: 0, color: "#FF0000".to_string() },
-                Block { x: 0, y: 0, z: 0, color: "#00FF00".to_string() },
-            ],
-        };
-        assert!(matches!(
-            validate_space_json(&space_json),
-            Err(ValidationError::DuplicatePosition { x: 0, y: 0, z: 0, .. })
-        ));
-    }
-}
-

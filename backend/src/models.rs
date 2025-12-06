@@ -1,13 +1,13 @@
-/**
- * Phase 5: Space JSON Models
- * 
- * Defines the data structures for deserializing Space JSON from the frontend.
- * Matches the TypeScript interfaces in frontend/src/export/serialize.ts
- */
+//! Space JSON data models.
+//!
+//! Defines structures for deserializing Space JSON from the frontend.
+//! Schema corresponds to `frontend/src/export/serialize.ts`.
 
 use serde::Deserialize;
 
-/// Space JSON root object
+/// Root object of a Space JSON payload.
+///
+/// Contains metadata and the list of blocks that make up a level.
 #[derive(Debug, Deserialize)]
 pub struct SpaceJSON {
     #[serde(rename = "schemaVersion")]
@@ -16,12 +16,14 @@ pub struct SpaceJSON {
     pub blocks: Vec<Block>,
 }
 
-/// Block object representing a single voxel
-#[derive(Debug, Deserialize)]
+/// A single voxel block with position and color.
+///
+/// Coordinates are in Roblox studs (already scaled 2x from Three.js units by frontend).
+#[derive(Debug, Clone, Deserialize)]
 pub struct Block {
     pub x: i32,
     pub y: i32,
     pub z: i32,
+    /// Hex color string in `#RRGGBB` or `#RGB` format.
     pub color: String,
 }
-
