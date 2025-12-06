@@ -60,3 +60,6 @@ output/**
 
 # boilerplate dev docs
 _meta_docs/
+
+# Claude
+.claude
