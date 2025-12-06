@@ -20,10 +20,11 @@
 - **HTTP**: Axum HTTP server
 
 ### Infrastructure
-- **Frontend Hosting**: Cloudflare Pages (deployment ready)
-- **Backend Hosting**: Railway (deployment ready)
-- **Health Endpoint**: `/health` and `/api/health` (for Railway health checks)
-- **CI/CD**: Manual deployment (documented in `_docs/deployment.md`)
+- **Frontend Hosting**: Cloudflare Pages (✅ deployed and tested)
+- **Backend Hosting**: Railway (✅ deployed and tested)
+- **Backend URL**: `https://level-builder-mvp-production.up.railway.app`
+- **Health Endpoint**: `/health` and `/api/health` (verified working)
+- **CI/CD**: Manual deployment via Railway and Cloudflare Pages (auto-deploy on git push)
 - **Monitoring**: Railway logs + Cloudflare Pages analytics
 
 ### Testing
@@ -179,7 +180,11 @@ npm run build
 
 ### Environments
 - **Development**: `http://localhost:5173` (frontend), `http://localhost:4000` (backend)
-- **Production**: Cloudflare Pages (frontend) + Railway (backend) - Ready for deployment (see `_docs/deployment.md`)
+- **Production**: 
+  - Frontend: Cloudflare Pages (deployed and tested)
+  - Backend: Railway (`https://level-builder-mvp-production.up.railway.app`)
+  - Health endpoint: `https://level-builder-mvp-production.up.railway.app/health`
+  - Export endpoint: `https://level-builder-mvp-production.up.railway.app/api/export`
 
 ---
 
