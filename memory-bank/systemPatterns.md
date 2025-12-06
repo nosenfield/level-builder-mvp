@@ -324,11 +324,11 @@ function serializeToSpaceJSON(
     (block) => block.placed === true && block.isGround !== true
   )
   
-  // Map to Space JSON format
+  // Map to Space JSON format (coordinates scaled 2x and rounded to integers)
   const serializedBlocks = userPlacedBlocks.map((block) => ({
-    x: block.x,
-    y: block.y,
-    z: block.z,
+    x: Math.round(block.x * 2),
+    y: Math.round(block.y * 2),
+    z: Math.round(block.z * 2),
     color: block.color,
     // Include tags/configs only for schemaVersion 2+
     ...(schemaVersion >= 2 && block.tags ? { tags: block.tags, tagConfig: block.tagConfig } : {})
@@ -346,7 +346,42 @@ function serializeToSpaceJSON(
 - Clean separation of export logic
 - Supports multiple schema versions
 - Filters out non-exportable blocks (removed, ground)
+- Coordinates scaled and rounded in frontend (backend expects integers)
 - Type-safe with TypeScript interfaces
+
+### Pattern 13: Block Rendering on Load
+**When to use**: Rendering saved blocks when loading a game
+**Example**:
+```typescript
+renderCustomBlocks() {
+  // Reset counters and maps
+  this.blocksMap.clear()
+  this.userPlacedBlockCount = 0
+  this.blocksCount = new Array(this.materialType.length).fill(0)
+  
+  // Render all placed blocks
+  for (const block of this.customBlocks) {
+    if (block.placed) {
+      const matrix = new THREE.Matrix4()
+      matrix.setPosition(block.x, block.y, block.z)
+      this.blocks[block.type].setMatrixAt(count, matrix)
+      this.blocksMap.set(`${x}_${y}_${z}`, block)
+      // Update counters...
+    }
+  }
+  
+  // Update all instance matrices
+  for (const blockMesh of this.blocks) {
+    blockMesh.instanceMatrix.needsUpdate = true
+  }
+}
+```
+
+**Why**: 
+- Rebuilds complete rendering state from saved data
+- Ensures blocksMap and counters are synchronized
+- Properly updates InstancedMesh instances
+- Required after loading customBlocks from storage
 
 ### Pattern 14: Minimal Part Properties for RBXLX
 **When to use**: Creating Part instances in Roblox DataModel for .rbxlx export
@@ -386,40 +421,6 @@ rbx_xml::to_writer_default(Cursor::new(&mut output), &dom, &top_level_refs)?;
 - Matches Roblox Studio's own export format
 - Ensures proper instance hierarchy and references
 
-### Pattern 13: Block Rendering on Load
-**When to use**: Rendering saved blocks when loading a game
-**Example**:
-```typescript
-renderCustomBlocks() {
-  // Reset counters and maps
-  this.blocksMap.clear()
-  this.userPlacedBlockCount = 0
-  this.blocksCount = new Array(this.materialType.length).fill(0)
-  
-  // Render all placed blocks
-  for (const block of this.customBlocks) {
-    if (block.placed) {
-      const matrix = new THREE.Matrix4()
-      matrix.setPosition(block.x, block.y, block.z)
-      this.blocks[block.type].setMatrixAt(count, matrix)
-      this.blocksMap.set(`${x}_${y}_${z}`, block)
-      // Update counters...
-    }
-  }
-  
-  // Update all instance matrices
-  for (const blockMesh of this.blocks) {
-    blockMesh.instanceMatrix.needsUpdate = true
-  }
-}
-```
-
-**Why**: 
-- Rebuilds complete rendering state from saved data
-- Ensures blocksMap and counters are synchronized
-- Properly updates InstancedMesh instances
-- Required after loading customBlocks from storage
-
 ---
 
 ## Key Invariants
@@ -435,9 +436,9 @@ renderCustomBlocks() {
 **Why**: Performance and file size constraints
 
 ### Invariant 3: Coordinate Bounds
-**Description**: All blocks must be within bounds: X/Z: -500 to 500, Y: 0 to 500
-**Enforcement**: Validation on placement, validation on export
-**Why**: Prevents invalid Space JSON and ensures reasonable level sizes
+**Description**: All blocks must be within bounds: X/Z: -1000 to 1000, Y: 0 to 1000 (after 2x scaling)
+**Enforcement**: Validation on placement, validation on export (frontend scales coordinates 2x before serialization)
+**Why**: Prevents invalid Space JSON and ensures reasonable level sizes. Backend receives integer coordinates.
 
 ### Invariant 4: Ground Plane Protection
 **Description**: Ground plane blocks (isGround: true) cannot be removed
@@ -508,9 +509,6 @@ renderCustomBlocks() {
 - **Shared constants**: Extract magic numbers to shared constants.ts for consistency
 - **Reduced allocations**: Set unused block type factors to 0, reduce maxCount for manual placement
 - **Cached counters**: O(1) user-placed block count instead of O(n) array filtering
-- **Chunk-based generation**: (Currently disabled for MVP, but structure exists)
-- **Worker threads**: Terrain generation in background (disabled for MVP)
-- **Lazy loading**: Only render visible blocks (future optimization)
 
 ### Caching Strategy
 - **Materials**: Created once, reused for all blocks of same color
@@ -525,22 +523,3 @@ renderCustomBlocks() {
 - **Concurrent users**: Backend must handle 100+ simultaneous exports
 
 ---
-
-## Filemap System
-
-### Purpose
-Token-optimized file indexes for agent context discovery.
-
-### File Locations
-- Root: `.filemap.json` (read at session start)
-- Modules: `<module>/.filemap.json` (read on-demand)
-
-### Usage Pattern
-1. Session start reads root filemap
-2. Task planning reads module filemaps for affected areas
-3. File discovery uses `f` (files) and `r` (related) to locate code
-
-### Maintenance
-- Update filemaps when adding/removing files
-- Use `/filemap-update` to refresh stale filemaps
-- Use `/filemap-validate` to check accuracy

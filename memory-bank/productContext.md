@@ -64,17 +64,17 @@ A browser-based voxel editor that:
 
 ### Flow 1: Create and Export Level
 1. User opens web app in browser
-2. User sees empty 3D grid space
-3. User selects color from palette (1-9 keys or click)
+2. User sees empty 3D grid space with ground plane
+3. User selects color from palette (1-0 keys or click)
 4. User places blocks by left-clicking in 3D space
 5. User removes blocks by right-clicking
 6. User navigates camera (WASD + Q/E + mouse)
 7. User clicks "Export" button in Escape menu
 8. System generates Space JSON and sends to backend
-9. Backend returns `.rbxlx` file
+9. Backend validates and generates `.rbxlx` file
 10. Browser downloads file
 11. User opens file in Roblox Studio
-12. Result: Playable level with working spawn and movement
+12. Result: Playable level with baseplate, spawn location, and all blocks visible
 
 ### Flow 2: Quick Level Prototype
 1. User places blocks rapidly using keyboard shortcuts

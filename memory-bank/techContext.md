@@ -14,20 +14,20 @@
 
 ### Backend
 - **Language**: Rust
-- **Framework**: Axum or Actix-web (TBD)
-- **Roblox Library**: rbx-dom ecosystem
+- **Framework**: Axum 0.7
+- **Roblox Library**: rbx-dom ecosystem (rbx_dom_weak, rbx_xml, rbx_types)
 - **Serialization**: rbx-xml for `.rbxlx` generation
-- **HTTP**: Axum/Actix-web HTTP server
+- **HTTP**: Axum HTTP server
 
 ### Infrastructure
 - **Frontend Hosting**: Cloudflare Pages
 - **Backend Hosting**: Railway
-- **CI/CD**: TBD (GitHub Actions likely)
+- **CI/CD**: TBD
 - **Monitoring**: TBD
 
 ### Testing
-- **Unit Tests**: TBD
-- **Integration Tests**: TBD
+- **Backend Tests**: 46 tests passing (26 validation + 9 RBXLX + 6 Phase 8 integration + 1 integration + 4 baseplate/spawn)
+- **Frontend Tests**: TBD
 - **E2E Tests**: TBD
 
 ---
@@ -73,12 +73,12 @@ cargo run  # Runs on port 3000 by default
 VITE_API_URL=https://api.example.com/api/export
 ```
 
-**Note**: Currently not configured. Export will use relative `/api/export` path by default.
+**Note**: Optional - if not set, export uses relative `/api/export` path (for local development).
 
 **Backend** (`.env` or environment variables):
 ```bash
-# Port (default: 4000)
-PORT=4000
+# Port (default: 3000)
+PORT=3000
 
 # CORS is configured to allow all origins for MVP development
 # Production CORS configuration will be added in deployment phase
@@ -140,9 +140,8 @@ PORT=4000
 ### Security Requirements
 - **Authentication**: None (MVP)
 - **Authorization**: None (MVP)
-- **Input validation**: Backend validates Space JSON schema
-- **Rate limiting**: 10 exports per minute per IP (backend)
-- **CORS**: Backend must allow frontend origin
+- **Input validation**: Backend validates Space JSON schema (schema version, block count, coordinate bounds, color format, duplicate positions)
+- **CORS**: Backend configured to allow all origins (MVP development)
 - **XSS prevention**: Sanitize user input (level names)
 
 ---
@@ -165,19 +164,19 @@ npm run build
 # Auto-deploy on push to main
 ```
 
-### Deployment (Backend - TBD)
+### Deployment (Backend)
 ```bash
 # Railway
 # Connect GitHub repo
 # Build command: cargo build --release
 # Start command: ./target/release/backend
 # Auto-deploy on push to main
+# Set PORT environment variable (Railway provides automatically)
 ```
 
 ### Environments
 - **Development**: `http://localhost:5173` (frontend), `http://localhost:3000` (backend)
-- **Staging**: TBD
-- **Production**: TBD (Cloudflare Pages + Railway)
+- **Production**: Cloudflare Pages (frontend) + Railway (backend) - TBD (Phase 10)
 
 ---
 
@@ -201,19 +200,19 @@ npm run build
 **Symptoms**: Roblox Studio shows error opening file
 **Solution**: Check backend validation, verify Space JSON schema, check rbx_xml version compatibility
 
-#### Issue 6: Parts not appearing in Roblox Studio
+#### Issue 5: Parts not appearing in Roblox Studio
 **Symptoms**: File opens but no blocks visible in Workspace
 **Solution**: Ensure XML serialization passes `dom.root().children()` instead of DataModel root. Services must be direct children of `<roblox>`, not wrapped in `<Item class="DataModel">`.
 
-#### Issue 7: Lighting Technology migration warning
+#### Issue 6: Lighting Technology migration warning
 **Symptoms**: Roblox Studio shows "Compatibility Lighting" migration warning
 **Solution**: Set Lighting service Technology property to 3 (ShadowMap) before serialization.
 
-#### Issue 8: Duplicate Camera in scene
+#### Issue 7: Duplicate Camera in scene
 **Symptoms**: Multiple Camera instances in Workspace
 **Solution**: Don't create custom Camera - Roblox Studio creates its own automatically with proper CurrentCamera reference.
 
-#### Issue 5: Performance issues with many blocks
+#### Issue 8: Performance issues with many blocks
 **Symptoms**: Low FPS, laggy interactions
 **Solution**: Reduce block count, optimize InstancedMesh usage, check browser performance tools
 
@@ -226,4 +225,4 @@ npm run build
 - **Components**: Keep under 200 lines where possible
 - **Comments**: Document complex logic
 - **Error handling**: Always handle errors gracefully
-- **Logging**: Use console.log for debugging (structured logging TBD)
+- **Logging**: Use console.log for debugging
