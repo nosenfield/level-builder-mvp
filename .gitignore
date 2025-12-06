@@ -63,3 +63,6 @@ _meta_docs/
 
 # Claude
 .claude
+
+# humanlayer
+thoughts/
