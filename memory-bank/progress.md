@@ -119,6 +119,12 @@
 - Removed custom Camera from Workspace (Roblox Studio creates its own automatically)
 - Simplified Part properties to minimal set (Name, CFrame, Size, Color, Anchored) - Roblox Studio provides defaults
 
+### Coordinate Scaling Fix - ✅ COMPLETE
+- [x] Move 2x coordinate scaling from backend to frontend
+- [x] Update validation bounds to scaled coordinates
+- [x] Update all tests for new coordinate system
+- [x] Fix fractional coordinate export issue
+
 ### Phase 9-10: Error Handling & Deployment - ⏳ NOT STARTED
 - Error handling
 - Deployment
