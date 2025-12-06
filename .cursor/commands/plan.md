@@ -10,11 +10,17 @@ You are planning a new task.
 
 2. **Read task**: _docs/task-list.md (find the specified task-id)
 
-3. **Read relevant rules**:
+3. **Read filemaps for affected areas** (SILENT):
+   - Read `.filemap.json` (root) to identify target modules
+   - Read `<module>/.filemap.json` for each affected module
+   - Use filemap `f` (files) to identify specific files to touch
+   - Use filemap `r` (related) to identify cross-module dependencies
+
+4. **Read relevant rules**:
    - .cursor/rules/base.mdc
    - Load domain-specific rules based on files affected
 
-4. **Produce PLAN**:
+5. **Produce PLAN**:
    - Files to touch (with globs)
    - Implementation steps
    - Test plan (unit/integration/e2e)
@@ -22,7 +28,7 @@ You are planning a new task.
    - Risk analysis
    - Memory bank updates needed
 
-5. **Show plan and WAIT for approval before implementing.**
+6. **Show plan and WAIT for approval before implementing.**
 
 ## Output Format
 

@@ -523,3 +523,24 @@ renderCustomBlocks() {
 - **Backend**: Stateless API, can scale horizontally
 - **Block limit**: 10,000 blocks per level (hard limit for MVP)
 - **Concurrent users**: Backend must handle 100+ simultaneous exports
+
+---
+
+## Filemap System
+
+### Purpose
+Token-optimized file indexes for agent context discovery.
+
+### File Locations
+- Root: `.filemap.json` (read at session start)
+- Modules: `<module>/.filemap.json` (read on-demand)
+
+### Usage Pattern
+1. Session start reads root filemap
+2. Task planning reads module filemaps for affected areas
+3. File discovery uses `f` (files) and `r` (related) to locate code
+
+### Maintenance
+- Update filemaps when adding/removing files
+- Use `/filemap-update` to refresh stale filemaps
+- Use `/filemap-validate` to check accuracy

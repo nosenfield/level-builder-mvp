@@ -3,7 +3,9 @@
   "p": "Roblox Level Builder: Three.js voxel editor with Rust backend for .rbxlx export",
   "d": {
     "backend/": "Rust HTTP API converting Space JSON to .rbxlx files",
-    "frontend/": "Three.js browser-based 3D block editor"
+    "frontend/": "Three.js browser-based 3D block editor",
+    ".cursor/": "Cursor agent rules and commands",
+    "memory-bank/": "AI context persistence (activeContext.md, progress.md)"
   },
   "f": {
     ".gitignore": "Git ignore patterns",

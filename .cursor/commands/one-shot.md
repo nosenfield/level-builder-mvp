@@ -210,6 +210,8 @@ Progress: [N]/[M] tasks ([X]%)
 **Read these files:**
 - `memory-bank/activeContext.md` (current focus)
 - `memory-bank/progress.md` (what's done/next)
+- `.filemap.json` (root) SILENTLY
+- Module filemaps for affected areas SILENTLY
 - `_docs/task-list/phase-[N]-[name].md` (task details for this phase)
 - `.cursor/rules/base.mdc` (core principles)
 - Domain-specific rules based on files affected

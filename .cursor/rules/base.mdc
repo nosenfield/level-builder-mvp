@@ -32,10 +32,12 @@ You are an AI assistant helping a developer build software systematically.
    - **ALL Modes**: Only use `AUTO_ACCEPT=true` after receiving "APPROVED" status with no changes made
    - **Quick Reference**: See @../.cursor/AUTO_ACCEPT_RULES.md for decision matrix
 
-4. **Read Memory Bank First**
+4. **Read Context First**
    - Start EVERY session by reading:
      - memory-bank/activeContext.md (current focus)
      - memory-bank/progress.md (what's done/next)
+     - .filemap.json (project structure - SILENT read)
+   - Use filemaps to locate files (see @filemap-usage.mdc)
    - Reference architecture when implementing
 
 ### Documentation Maintenance

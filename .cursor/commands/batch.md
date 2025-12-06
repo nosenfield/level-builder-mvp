@@ -76,6 +76,8 @@ Follow the complete one-shot process for this task:
 1. **Read Context**
    - memory-bank/activeContext.md
    - memory-bank/progress.md
+   - `.filemap.json` (root) SILENTLY
+   - Module filemaps for affected areas SILENTLY
    - _docs/task-list.md (find task-id)
    - .cursor/rules/base.mdc + domain rules
 

@@ -1,0 +1,58 @@
+---
+description: Filemap system for structured file discovery
+alwaysApply: true
+---
+
+# Filemap System
+
+## Purpose
+
+Filemaps (`.filemap.json`) provide token-optimized indexes of directories for efficient context discovery. Use them to quickly understand project structure and locate relevant files.
+
+## Schema
+
+```json
+{
+  "m": "module-name",           // Required: module/directory name
+  "p": "One sentence purpose",  // Required: purpose description
+  "f": {                        // Required: files map
+    "filename.ext": "Purpose description",
+    "subdir/file.ext": "Consolidated nested file"
+  },
+  "d": {                        // Optional: subdirectory descriptions
+    "subdir/": "Purpose (has own filemap)"
+  },
+  "x": ["exportName: desc"],    // Optional: key exports
+  "r": ["path: relationship"]   // Optional: related files
+}
+```
+
+## Usage Patterns
+
+### Session Start
+- Root `.filemap.json` is read alongside Memory Bank
+- Provides project overview without reading all files
+
+### Task Planning
+- Read module filemap for target directory
+- Use `f` to identify specific files to modify
+- Use `d` to find related modules
+- Use `r` to identify cross-module dependencies
+
+### File Discovery
+- Start with root filemap to identify target module
+- Read module filemap to find specific files
+- Use `x` (exports) to understand module API
+
+## Filemap Locations
+
+- Project root: `.filemap.json`
+- Source directories: `<dir>/.filemap.json`
+- Consolidated: Subdirs with <3 files merged into parent's `f` with `subdir/file.ext` keys
+
+## When to Update Filemaps
+
+- After adding/removing files in a directory
+- After changing a file's primary purpose
+- After adding new exports to a module
+- Use `/filemap-update` command to refresh

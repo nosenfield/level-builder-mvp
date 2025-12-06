@@ -9,9 +9,10 @@ You are starting a development session (new or resuming from pause).
    - If it exists: This is a RESUME session (read checkpoint)
    - If it doesn't exist: This is a NEW session
 
-2. **Read Memory Bank** (MANDATORY):
+2. **Read Context** (MANDATORY):
    - Read `memory-bank/activeContext.md` in full
    - Read `memory-bank/progress.md` in full
+   - Read `.filemap.json` (project structure - SILENT, do not output)
 
 3. **Confirm Context**:
    - Current phase and milestone
@@ -53,6 +54,10 @@ You are starting a development session (new or resuming from pause).
 ## Active Decisions
 - [Key decision 1]
 - [Key decision 2]
+
+## Project Structure (from .filemap.json)
+**Backend**: [backend/ purpose from filemap]
+**Frontend**: [frontend/ purpose from filemap]
 
 ## Ready to Proceed
 ✅ Context loaded. Use `/plan [id]` to begin a task, or ask questions about the project.

@@ -10,6 +10,7 @@ alwaysApply: true
 Every session:
 - [ ] Read memory-bank/activeContext.md
 - [ ] Read memory-bank/progress.md
+- [ ] Read .filemap.json (project structure - silent)
 - [ ] Check current task in _docs/task-list.md
 - [ ] Ask about any blockers
 
