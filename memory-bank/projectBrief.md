@@ -42,7 +42,8 @@ Creating game environments in Roblox requires installing Roblox Studio (1+ GB), 
 - 10,000 block limit per level
 - Coordinate bounds enforcement (-500 to 500 X/Z, 0 to 500 Y)
 
-### Explicitly Out of Scope
+## Post-MVP Scope
+### Stretch Goals
 - User accounts and authentication
 - Cloud save/load functionality
 - Undo/redo functionality
@@ -76,12 +77,3 @@ Creating game environments in Roblox requires installing Roblox Studio (1+ GB), 
 - **Output Platform**: Roblox Studio (current stable release)
 
 ---
-
-## Project Timeline
-
-- **MVP Target**: TBD
-- **Key Milestones**:
-  - Frontend migration complete: TBD
-  - Backend API complete: TBD
-  - Integration testing: TBD
-  - Production deployment: TBD
