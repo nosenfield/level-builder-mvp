@@ -41,7 +41,7 @@ impl ValidationError {
             }
             ValidationError::CoordinateOutOfBounds { x, y, z, index } => {
                 format!(
-                    "Block at position ({}, {}, {}) [index {}] is out of bounds. Valid range: X/Z: -500 to 500, Y: 0 to 500.",
+                    "Block at position ({}, {}, {}) [index {}] is out of bounds. Valid range: X/Z: -1000 to 1000, Y: 0 to 1000.",
                     x, y, z, index
                 )
             }
@@ -82,15 +82,16 @@ pub fn validate_block_count(count: usize) -> Result<(), ValidationError> {
 }
 
 /// Validate coordinate bounds for a single block
-/// X/Z: -500 to 500 (inclusive)
-/// Y: 0 to 500 (inclusive)
+/// Coordinates are already scaled from Three.js units to Roblox studs (2x scale)
+/// X/Z: -1000 to 1000 (inclusive) - scaled from Three.js -500 to 500
+/// Y: 0 to 1000 (inclusive) - scaled from Three.js 0 to 500
 pub fn validate_coordinate_bounds(x: i32, y: i32, z: i32, index: usize) -> Result<(), ValidationError> {
-    const MIN_X: i32 = -500;
-    const MAX_X: i32 = 500;
-    const MIN_Z: i32 = -500;
-    const MAX_Z: i32 = 500;
+    const MIN_X: i32 = -1000;
+    const MAX_X: i32 = 1000;
+    const MIN_Z: i32 = -1000;
+    const MAX_Z: i32 = 1000;
     const MIN_Y: i32 = 0;
-    const MAX_Y: i32 = 500;
+    const MAX_Y: i32 = 1000;
 
     if x < MIN_X || x > MAX_X || z < MIN_Z || z > MAX_Z || y < MIN_Y || y > MAX_Y {
         return Err(ValidationError::CoordinateOutOfBounds { x, y, z, index });
@@ -218,40 +219,41 @@ mod tests {
 
     #[test]
     fn test_validate_coordinate_bounds_accepts_valid() {
-        assert!(validate_coordinate_bounds(0, 250, 0, 0).is_ok());
-        assert!(validate_coordinate_bounds(-500, 0, -500, 0).is_ok());
-        assert!(validate_coordinate_bounds(500, 500, 500, 0).is_ok());
+        // Test with scaled bounds (coordinates already scaled 2x from Three.js units)
+        assert!(validate_coordinate_bounds(0, 500, 0, 0).is_ok());
+        assert!(validate_coordinate_bounds(-1000, 0, -1000, 0).is_ok());
+        assert!(validate_coordinate_bounds(1000, 1000, 1000, 0).is_ok());
     }
 
     #[test]
     fn test_validate_coordinate_bounds_rejects_x_too_low() {
         assert!(matches!(
-            validate_coordinate_bounds(-501, 0, 0, 0),
-            Err(ValidationError::CoordinateOutOfBounds { x: -501, .. })
+            validate_coordinate_bounds(-1001, 0, 0, 0),
+            Err(ValidationError::CoordinateOutOfBounds { x: -1001, .. })
         ));
     }
 
     #[test]
     fn test_validate_coordinate_bounds_rejects_x_too_high() {
         assert!(matches!(
-            validate_coordinate_bounds(501, 0, 0, 0),
-            Err(ValidationError::CoordinateOutOfBounds { x: 501, .. })
+            validate_coordinate_bounds(1001, 0, 0, 0),
+            Err(ValidationError::CoordinateOutOfBounds { x: 1001, .. })
         ));
     }
 
     #[test]
     fn test_validate_coordinate_bounds_rejects_z_too_low() {
         assert!(matches!(
-            validate_coordinate_bounds(0, 0, -501, 0),
-            Err(ValidationError::CoordinateOutOfBounds { z: -501, .. })
+            validate_coordinate_bounds(0, 0, -1001, 0),
+            Err(ValidationError::CoordinateOutOfBounds { z: -1001, .. })
         ));
     }
 
     #[test]
     fn test_validate_coordinate_bounds_rejects_z_too_high() {
         assert!(matches!(
-            validate_coordinate_bounds(0, 0, 501, 0),
-            Err(ValidationError::CoordinateOutOfBounds { z: 501, .. })
+            validate_coordinate_bounds(0, 0, 1001, 0),
+            Err(ValidationError::CoordinateOutOfBounds { z: 1001, .. })
         ));
     }
 
@@ -266,8 +268,8 @@ mod tests {
     #[test]
     fn test_validate_coordinate_bounds_rejects_y_too_high() {
         assert!(matches!(
-            validate_coordinate_bounds(0, 501, 0, 0),
-            Err(ValidationError::CoordinateOutOfBounds { y: 501, .. })
+            validate_coordinate_bounds(0, 1001, 0, 0),
+            Err(ValidationError::CoordinateOutOfBounds { y: 1001, .. })
         ));
     }
 
@@ -397,12 +399,12 @@ mod tests {
             schema_version: 1,
             name: Some("Test Level".to_string()),
             blocks: vec![
-                Block { x: 501, y: 0, z: 0, color: "#FF0000".to_string() },
+                Block { x: 1001, y: 0, z: 0, color: "#FF0000".to_string() }, // Outside scaled bounds
             ],
         };
         assert!(matches!(
             validate_space_json(&space_json),
-            Err(ValidationError::CoordinateOutOfBounds { x: 501, .. })
+            Err(ValidationError::CoordinateOutOfBounds { x: 1001, .. })
         ));
     }
 

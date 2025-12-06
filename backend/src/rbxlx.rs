@@ -48,14 +48,14 @@ pub fn hex_to_color3(hex: &str) -> Result<Color3, String> {
 /// Returns (x, y, z) where:
 /// - x, z: Center of level (average of all block positions)
 /// - y: Highest block Y + 1 (spawn above highest block)
-/// All coordinates are scaled 2x for Roblox studs
-/// If no blocks, returns default (0, 1.0, 0) - scaled from (0, 0.5, 0)
+/// Block coordinates are already scaled to Roblox studs (2x scale applied in frontend)
+/// If no blocks, returns default (0, 1.0, 0)
 /// 
 /// NOTE: Currently unused - SpawnLocation uses fixed position (0, 0.5, 0).
 /// Preserved for future phases where dynamic spawn positioning may be needed.
 pub fn calculate_spawn_position(blocks: &[Block]) -> (f32, f32, f32) {
     if blocks.is_empty() {
-        return (0.0, 1.0, 0.0); // Scaled: 0.5 * 2 = 1.0
+        return (0.0, 1.0, 0.0);
     }
     
     let mut sum_x = 0.0;
@@ -72,14 +72,17 @@ pub fn calculate_spawn_position(blocks: &[Block]) -> (f32, f32, f32) {
     
     let center_x = sum_x / blocks.len() as f32;
     let center_z = sum_z / blocks.len() as f32;
-    let spawn_y = max_y + 1.0; // Spawn 1 unit above highest block
+    let spawn_y = max_y + 1.0; // Spawn 1 unit above highest block (already in Roblox studs)
     
-    // Scale all coordinates by 2x for Roblox studs
-    (center_x * 2.0, spawn_y * 2.0, center_z * 2.0)
+    // Coordinates are already scaled, return as-is
+    (center_x, spawn_y, center_z)
 }
 
 /// Create a Part instance from a Block
 /// Uses minimal properties - Roblox Studio fills in sensible defaults for the rest
+/// 
+/// Note: Block coordinates are already scaled from Three.js units to Roblox studs (2x scale)
+/// applied in the frontend before serialization.
 fn create_part_from_block(block: &Block, referent_id: usize) -> InstanceBuilder {
     // Convert hex color to Color3
     let color = hex_to_color3(&block.color)
@@ -89,13 +92,11 @@ fn create_part_from_block(block: &Block, referent_id: usize) -> InstanceBuilder 
             Color3::new(0.5, 0.5, 0.5) // Default to gray on error
         });
 
-    // Convert block position to Roblox coordinates with 2x scale
-    // Three.js units (1x1x1) scale to Roblox studs (2x2x2)
-    // Y offset: Space JSON Y becomes Part CFrame Y + 1.0 (block center for 2x2x2 block)
+    // Block coordinates are already scaled (2x) from Three.js units to Roblox studs
     let position = Vector3::new(
-        block.x as f32 * 2.0,
-        block.y as f32 * 2.0 + 1.0,
-        block.z as f32 * 2.0,
+        block.x as f32,
+        block.y as f32,
+        block.z as f32,
     );
 
     // Create identity rotation matrix (no rotation)
@@ -270,50 +271,54 @@ mod tests {
         let blocks = vec![];
         let (x, y, z) = calculate_spawn_position(&blocks);
         assert_eq!(x, 0.0);
-        assert_eq!(y, 1.0); // Scaled: 0.5 * 2 = 1.0
+        assert_eq!(y, 1.0); // Default spawn position
         assert_eq!(z, 0.0);
     }
 
     #[test]
     fn test_calculate_spawn_position_single() {
+        // Coordinates are already scaled from Three.js units to Roblox studs
+        // Three.js (10, 5, 20) → Scaled to (20, 10, 40) in frontend
         let blocks = vec![Block {
-            x: 10,
-            y: 5,
-            z: 20,
+            x: 20,  // Already scaled
+            y: 10,  // Already scaled
+            z: 40,  // Already scaled
             color: "#FF0000".to_string(),
         }];
         let (x, y, z) = calculate_spawn_position(&blocks);
-        assert_eq!(x, 20.0); // Scaled: 10 * 2 = 20.0
-        assert_eq!(y, 12.0); // Scaled: (5 + 1) * 2 = 12.0
-        assert_eq!(z, 40.0); // Scaled: 20 * 2 = 40.0
+        assert_eq!(x, 20.0); // Center X (already scaled)
+        assert_eq!(y, 11.0); // Highest Y (10) + 1 = 11
+        assert_eq!(z, 40.0); // Center Z (already scaled)
     }
 
     #[test]
     fn test_calculate_spawn_position_multiple() {
+        // Coordinates are already scaled from Three.js units to Roblox studs
+        // Three.js (0,0,0), (10,5,10), (20,3,20) → Scaled to (0,0,0), (20,10,20), (40,6,40)
         let blocks = vec![
             Block {
-                x: 0,
-                y: 0,
-                z: 0,
+                x: 0,   // Already scaled
+                y: 0,   // Already scaled
+                z: 0,   // Already scaled
                 color: "#FF0000".to_string(),
             },
             Block {
-                x: 10,
-                y: 5,
-                z: 10,
+                x: 20,  // Already scaled (was 10)
+                y: 10,  // Already scaled (was 5)
+                z: 20,  // Already scaled (was 10)
                 color: "#00FF00".to_string(),
             },
             Block {
-                x: 20,
-                y: 3,
-                z: 20,
+                x: 40,  // Already scaled (was 20)
+                y: 6,   // Already scaled (was 3)
+                z: 40,  // Already scaled (was 20)
                 color: "#0000FF".to_string(),
             },
         ];
         let (x, y, z) = calculate_spawn_position(&blocks);
-        assert_eq!(x, 20.0); // Scaled: (0 + 10 + 20) / 3 * 2 = 20.0
-        assert_eq!(y, 12.0); // Scaled: (5 + 1) * 2 = 12.0
-        assert_eq!(z, 20.0); // Scaled: (0 + 10 + 20) / 3 * 2 = 20.0
+        assert_eq!(x, 20.0); // Center X: (0 + 20 + 40) / 3 = 20.0
+        assert_eq!(y, 11.0); // Highest Y (10) + 1 = 11
+        assert_eq!(z, 20.0); // Center Z: (0 + 20 + 40) / 3 = 20.0
     }
 
     #[test]
@@ -588,14 +593,14 @@ mod tests {
     /// Phase 8.6: Test coordinate edge cases (bounds limits)
     #[test]
     fn test_phase8_6_coordinate_edge_cases() {
-        // Test all coordinate bounds: X/Z: -500 to 500, Y: 0 to 500
+        // Test all coordinate bounds: X/Z: -1000 to 1000, Y: 0 to 1000 (already scaled from Three.js units)
         let edge_blocks = vec![
-            Block { x: -500, y: 0, z: 0, color: "#FF0000".to_string() }, // X min
-            Block { x: 500, y: 0, z: 0, color: "#00FF00".to_string() },  // X max
-            Block { x: 0, y: 0, z: -500, color: "#0000FF".to_string() }, // Z min
-            Block { x: 0, y: 0, z: 500, color: "#FFFF00".to_string() },  // Z max
+            Block { x: -1000, y: 0, z: 0, color: "#FF0000".to_string() }, // X min
+            Block { x: 1000, y: 0, z: 0, color: "#00FF00".to_string() },  // X max
+            Block { x: 0, y: 0, z: -1000, color: "#0000FF".to_string() }, // Z min
+            Block { x: 0, y: 0, z: 1000, color: "#FFFF00".to_string() },  // Z max
             Block { x: 0, y: 0, z: 0, color: "#FF00FF".to_string() },     // Y min
-            Block { x: 0, y: 500, z: 0, color: "#00FFFF".to_string() },   // Y max
+            Block { x: 0, y: 1000, z: 0, color: "#00FFFF".to_string() },   // Y max
         ];
         
         let space_json = SpaceJSON {
@@ -614,14 +619,14 @@ mod tests {
         let part_count = xml_str.matches("<Item class=\"Part\"").count();
         assert_eq!(part_count, 7, "Should have 7 Parts (baseplate + 6 edge case blocks)");
         
-        // Verify spawn position is calculated correctly (scaled 2x)
-        // Center X: (-500 + 500 + 0 + 0 + 0 + 0) / 6 = 0, scaled: 0 * 2 = 0
-        // Center Z: (0 + 0 - 500 + 500 + 0 + 0) / 6 = 0, scaled: 0 * 2 = 0
-        // Highest Y: 500 + 1 = 501, scaled: 501 * 2 = 1002
+        // Verify spawn position is calculated correctly (coordinates already scaled)
+        // Center X: (-1000 + 1000 + 0 + 0 + 0 + 0) / 6 = 0
+        // Center Z: (0 + 0 - 1000 + 1000 + 0 + 0) / 6 = 0
+        // Highest Y: 1000 + 1 = 1001
         let (spawn_x, spawn_y, spawn_z) = calculate_spawn_position(&space_json.blocks);
-        assert_eq!(spawn_x, 0.0, "Spawn X should be center (0), scaled: 0 * 2 = 0");
-        assert_eq!(spawn_y, 1002.0, "Spawn Y should be highest Y (500) + 1, scaled: 501 * 2 = 1002");
-        assert_eq!(spawn_z, 0.0, "Spawn Z should be center (0), scaled: 0 * 2 = 0");
+        assert_eq!(spawn_x, 0.0, "Spawn X should be center (0)");
+        assert_eq!(spawn_y, 1001.0, "Spawn Y should be highest Y (1000) + 1 = 1001");
+        assert_eq!(spawn_z, 0.0, "Spawn Z should be center (0)");
         
         // Verify spawn location exists (exact position format may vary in XML)
         // The spawn calculation is tested separately, so we just verify SpawnLocation exists
