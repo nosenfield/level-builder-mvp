@@ -20,10 +20,11 @@
 - **HTTP**: Axum HTTP server
 
 ### Infrastructure
-- **Frontend Hosting**: Cloudflare Pages
-- **Backend Hosting**: Railway
-- **CI/CD**: TBD
-- **Monitoring**: TBD
+- **Frontend Hosting**: Cloudflare Pages (deployment ready)
+- **Backend Hosting**: Railway (deployment ready)
+- **Health Endpoint**: `/health` and `/api/health` (for Railway health checks)
+- **CI/CD**: Manual deployment (documented in `_docs/deployment.md`)
+- **Monitoring**: Railway logs + Cloudflare Pages analytics
 
 ### Testing
 - **Backend Tests**: 46 tests passing (26 validation + 9 RBXLX + 6 Phase 8 integration + 1 integration + 4 baseplate/spawn)
@@ -77,11 +78,11 @@ VITE_API_URL=https://api.example.com/api/export
 
 **Backend** (`.env` or environment variables):
 ```bash
-# Port (default: 3000)
-PORT=3000
+# Port (default: 4000, Railway provides automatically)
+PORT=4000
 
 # CORS is configured to allow all origins for MVP development
-# Production CORS configuration will be added in deployment phase
+# Production CORS configuration documented in deployment guide
 ```
 
 ---
@@ -172,11 +173,13 @@ npm run build
 # Start command: ./target/release/backend
 # Auto-deploy on push to main
 # Set PORT environment variable (Railway provides automatically)
+# Health endpoint: GET /health or GET /api/health
+# See _docs/deployment.md for detailed instructions
 ```
 
 ### Environments
-- **Development**: `http://localhost:5173` (frontend), `http://localhost:3000` (backend)
-- **Production**: Cloudflare Pages (frontend) + Railway (backend) - TBD (Phase 10)
+- **Development**: `http://localhost:5173` (frontend), `http://localhost:4000` (backend)
+- **Production**: Cloudflare Pages (frontend) + Railway (backend) - Ready for deployment (see `_docs/deployment.md`)
 
 ---
 

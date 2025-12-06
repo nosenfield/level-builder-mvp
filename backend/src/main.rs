@@ -6,7 +6,7 @@
 use axum::{
     http::{header, StatusCode},
     response::{IntoResponse, Response},
-    routing::post,
+    routing::{get, post},
     Json, Router,
 };
 use serde_json::json;
@@ -75,6 +75,16 @@ async fn export_handler(Json(payload): Json<SpaceJSON>) -> Result<Response, ApiE
     Ok(response)
 }
 
+/// Handles GET `/health` requests.
+///
+/// Returns a simple health check response for deployment platforms (e.g., Railway).
+async fn health_handler() -> impl IntoResponse {
+    Json(json!({
+        "status": "ok",
+        "service": "roblox-level-builder-backend"
+    }))
+}
+
 /// Initializes and runs the HTTP server.
 ///
 /// Configures CORS for cross-origin requests and binds to the port specified
@@ -93,6 +103,8 @@ async fn main() {
         .allow_headers(Any);
 
     let app = Router::new()
+        .route("/health", get(health_handler))
+        .route("/api/health", get(health_handler))
         .route("/api/export", post(export_handler))
         .layer(cors);
 
@@ -102,6 +114,7 @@ async fn main() {
 
     println!("🚀 Backend server running on http://0.0.0.0:{}", port);
     println!("📡 Export endpoint: POST http://localhost:{}/api/export", port);
+    println!("❤️  Health endpoint: GET http://localhost:{}/health", port);
 
     axum::serve(listener, app)
         .await

@@ -125,9 +125,28 @@
 - [x] Update all tests for new coordinate system
 - [x] Fix fractional coordinate export issue
 
-### Phase 9-10: Error Handling & Deployment - ⏳ NOT STARTED
-- Error handling
-- Deployment
+### Phase 10: Deployment - 🔄 IN PROGRESS
+- [x] 10.1: Create Railway account and project (manual - user action required)
+- [x] 10.2: Configure Railway for Rust deployment (code complete - health endpoint added)
+- [x] 10.3: Set environment variables (documented - PORT auto-provided by Railway)
+- [ ] 10.4: Deploy backend to Railway (manual - user action required)
+- [ ] 10.5: Verify backend health endpoint responds (manual - test after deployment)
+- [ ] 10.6: Note backend URL for frontend config (manual - after Railway deployment)
+- [x] 10.7: Create Cloudflare Pages account and project (manual - user action required)
+- [x] 10.8: Update frontend API URL to production backend (code ready - VITE_API_URL env var)
+- [x] 10.9: Build frontend: `npm run build` (code ready - build config verified)
+- [ ] 10.10: Deploy frontend to Cloudflare Pages (manual - user action required)
+- [ ] 10.11: Configure custom domain (optional - documented)
+- [ ] 10.12: Test full export flow on production (manual - after deployment)
+- [ ] 10.13: Test from multiple browsers (manual - after deployment)
+- [ ] 10.14: Verify CORS is working (manual - after deployment)
+- [ ] 10.15: Monitor for errors (manual - ongoing)
+
+**Code Complete**: Health endpoint added, deployment documentation created, environment variable support ready
+**Manual Steps Pending**: Railway deployment, Cloudflare Pages deployment, production testing
+
+### Phase 9: Error Handling - ⏳ NOT STARTED
+- Error handling tests
 
 ---
 
@@ -141,24 +160,24 @@
 - ✅ **Core Features**: Block placement/removal, color selection, coordinate bounds, block limits, auto-save, camera controls
 
 ### In Progress
-- **Phase 9-10: Error Handling & Deployment** - Not yet started
+- **Phase 10: Deployment** - Code complete, manual deployment steps pending
 
 ---
 
 ## What's Next
 
 ### Priority 1 (Immediate - Next Session)
+- [ ] Complete Phase 10: Manual Deployment Steps
+  - Deploy backend to Railway (follow `_docs/deployment.md`)
+  - Deploy frontend to Cloudflare Pages (follow `_docs/deployment.md`)
+  - Test production deployment end-to-end
+
+### Priority 2 (This Week)
+- [ ] Complete Phase 10: Deployment (all manual steps)
 - [ ] Begin Phase 9: Error Handling (7 tasks)
   - Test invalid schema version, block limit, out-of-bounds coordinates
   - Test invalid color format, duplicate positions, malformed JSON
   - Verify frontend displays error messages correctly
-
-### Priority 2 (This Week)
-- [ ] Complete Phase 9: Error Handling
-- [ ] Begin Phase 10: Deployment
-  - Backend deployment to Railway
-  - Frontend deployment to Cloudflare Pages
-  - Production testing
 
 ---
 
