@@ -1,0 +1,13 @@
+{
+  "m": "backend/tests",
+  "p": "Integration and unit tests for backend library",
+  "f": {
+    "validation_tests.rs": "Tests: schema version, block count, bounds, colors, duplicates",
+    "rbxlx_tests.rs": "Tests: hex_to_color3, spawn position, generate_rbxlx, color palette"
+  },
+  "r": [
+    "../src/validation.rs: Validation implementation",
+    "../src/rbxlx.rs: RBXLX generation implementation",
+    "../src/models.rs: Data structures"
+  ]
+}

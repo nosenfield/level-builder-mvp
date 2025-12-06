@@ -1,0 +1,23 @@
+{
+  "m": "backend/src",
+  "p": "Rust backend: Space JSON to .rbxlx conversion via HTTP API",
+  "f": {
+    "lib.rs": "Library root, re-exports models/rbxlx/validation modules",
+    "main.rs": "Axum HTTP server, POST /api/export endpoint with CORS",
+    "models.rs": "SpaceJSON and Block structs for deserialization",
+    "validation.rs": "Input validation: schema version, block count, bounds, colors, duplicates",
+    "rbxlx.rs": "RBXLX XML generation using rbx-dom-weak/rbx-xml"
+  },
+  "x": [
+    "SpaceJSON: Root payload with schema_version, name, blocks",
+    "Block: Voxel with x/y/z (Roblox studs) and hex color",
+    "ValidationError: Error enum with codes/messages",
+    "validate_space_json(): Full payload validation",
+    "generate_rbxlx(): Creates complete Roblox DataModel XML",
+    "hex_to_color3(): Hex string to Roblox Color3"
+  ],
+  "r": [
+    "../tests/: Unit and integration tests",
+    "../Cargo.toml: Crate dependencies"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "m": "mvp",
+  "p": "Roblox Level Builder: Three.js voxel editor with Rust backend for .rbxlx export",
+  "d": {
+    "backend/": "Rust HTTP API converting Space JSON to .rbxlx files",
+    "frontend/": "Three.js browser-based 3D block editor"
+  },
+  "f": {
+    ".gitignore": "Git ignore patterns",
+    "backend/Cargo.toml": "Rust crate config and dependencies",
+    "frontend/package.json": "Node.js dependencies and scripts",
+    "frontend/tsconfig.json": "TypeScript configuration",
+    "frontend/vite.config.ts": "Vite build configuration",
+    "frontend/index.html": "HTML entry point"
+  }
+}
